@@ -1,0 +1,14 @@
+services:
+  db:
+    image: mysql:8.0-oracle
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootd
+    ports:
+      - "3306:3306"
+    volumes:
+      - krlsnathaan_data:/var/lib/mysql
+
+volumes:
+  krlsnathaan_data:
