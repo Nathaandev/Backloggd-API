@@ -7,14 +7,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "user")
-public class userModel {
+@Table(name = "games")
+public class gamesModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private Long gameId;
 
-    private String username;
-    private String password;
-    private String email;
+    private String gameName;
+
+    private String gameDescription;
 }
