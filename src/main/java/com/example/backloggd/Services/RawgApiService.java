@@ -1,5 +1,6 @@
 package com.example.backloggd.Services;
 
+import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,20 @@ public class RawgApiService {
                 .retrieve()
                 .bodyToMono(RawgResponseDTO.class)
                 .block();
+    }
+    public RawgGameDTO GetGameDetailsWithID(Integer rawgId){
+        try {
+            return webClient.get()
+                    .uri(uriBuilder -> uriBuilder.path("/games/{id}")
+                            .queryParam("key", apiKey)
+                            .build(rawgId))
+                    .retrieve()
+                    .bodyToMono(RawgGameDTO.class)
+                    .block();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 
 }

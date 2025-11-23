@@ -9,7 +9,7 @@ public record RawgGameDTO(
          @JsonProperty("name")
          String gameName,
 
-         @JsonProperty("description")
+         @JsonProperty("description") //ja testei description_raw tbm
          String gameDescription,
 
          @JsonProperty("released")
