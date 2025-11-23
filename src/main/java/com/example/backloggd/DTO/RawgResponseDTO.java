@@ -4,7 +4,7 @@ import java.util.List;
 
 public record RawgResponseDTO(
 
-        List<RawgAPIDTO>results,
+        List<RawgGameDTO>results,
 
         Integer count
 

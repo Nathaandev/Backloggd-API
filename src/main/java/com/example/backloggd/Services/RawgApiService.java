@@ -1,0 +1,38 @@
+package com.example.backloggd.Services;
+
+import com.example.backloggd.DTO.RawgResponseDTO;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+
+@Service
+public class RawgApiService {
+
+    @Value("${rawg.api.base-url}")
+    private String baseUrl;
+
+    @Value("${rawg.api.key}")
+    private String apiKey;
+
+    private final WebClient webClient;
+
+    public RawgApiService(
+            @Value("${rawg.api.base-url}") String baseUrl,
+            @Value("${rawg.api.key}") String apiKey
+    ){
+        this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
+        this.webClient = WebClient.builder().baseUrl(baseUrl).build();
+    }
+    public RawgResponseDTO getGames(String gameName){
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/games")
+                        .queryParam("search", gameName)
+                        .queryParam("key", apiKey)
+                        .build())
+                .retrieve()
+                .bodyToMono(RawgResponseDTO.class)
+                .block();
+    }
+
+}

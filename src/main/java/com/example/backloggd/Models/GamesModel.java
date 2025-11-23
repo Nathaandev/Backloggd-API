@@ -18,15 +18,9 @@ public class GamesModel {
 
     private String gameDescription;
 
-    private Integer rawgID;
+    private String releaseDate;
 
-    public Long getGameId() {
-        return gameId;
-    }
-
-    public void setGameId(Long gameId) {
-        this.gameId = gameId;
-    }
+    private Integer rawgId;
 
     public String getGameName() {
         return gameName;
@@ -42,5 +36,21 @@ public class GamesModel {
 
     public void setGameDescription(String gameDescription) {
         this.gameDescription = gameDescription;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(String releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    public Integer getRawgId() {
+        return rawgId;
+    }
+
+    public void setRawgId(Integer rawgId) {
+        this.rawgId = rawgId;
     }
 }

@@ -1,11 +1,11 @@
 package com.example.backloggd.Services;
 
-import java.util.Optional;
-
+import com.example.backloggd.DTO.RawgGameDTO;
+import com.example.backloggd.DTO.RawgResponseDTO;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Repository.GameRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +13,21 @@ import org.springframework.stereotype.Service;
 public class GameService {
     @Autowired
     GameRepository gameRepository;
+    private final RawgApiService rawgApiService;
+
+    public GameService(RawgApiService rawgApiService) {
+        this.rawgApiService = rawgApiService;
+    }
+
     public ResponseEntity<GamesModel> searchGame(String gameName) {
         var gamesModelOptional = gameRepository.findByGameName(gameName);
         if(gamesModelOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            RawgResponseDTO rawgResponse = rawgApiService.getGames(gameName);
+            var bestMatch = rawgResponse.results().get(0);
+            GamesModel gameFound = new GamesModel();
+            BeanUtils.copyProperties(bestMatch, gameFound);
+            return ResponseEntity.ok(gameFound);
+
         }
         var game = gamesModelOptional.get();
         return ResponseEntity.ok(game);
