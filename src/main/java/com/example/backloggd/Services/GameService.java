@@ -7,7 +7,6 @@ import com.example.backloggd.Repository.GameRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +21,15 @@ public class GameService {
     }
 
     public ResponseEntity<GamesModel> searchGame(String gameName) {
-        var gamesModelOptional = gameRepository.findByGameName(gameName);
+        var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         if(gamesModelOptional.isEmpty()) {
             RawgResponseDTO rawgResponse = rawgApiService.getGames(gameName);
+            if(rawgResponse == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
             var bestMatch = rawgResponse.results().get(0);
             GamesModel gameFound = new GamesModel();
             BeanUtils.copyProperties(bestMatch, gameFound);
-
             RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(gameFound.getRawgId());
             gameFound.setGameDescription(gameWithFullDetails.gameDescription());
             return ResponseEntity.status(HttpStatus.OK).body(gameRepository.save(gameFound));
