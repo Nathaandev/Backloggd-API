@@ -24,9 +24,16 @@ public class GamesModel {
 
     private Integer rawgId;
 
-    public String getGameName() {
-        return gameName;
-    }
+    @Lob
+    private String genres;
+
+    private String publishers;
+
+    private String developers;
+
+    private String platforms;
+
+    private Integer metacritic;
 
     public void setGameName(String gameName) {
         this.gameName = gameName;
@@ -54,5 +61,57 @@ public class GamesModel {
 
     public void setRawgId(Integer rawgId) {
         this.rawgId = rawgId;
+    }
+
+    public Long getGameId() {
+        return gameId;
+    }
+
+    public String getGameName() {
+        return gameName;
+    }
+
+    public String getGenres() {
+        return genres;
+    }
+
+    public void setGenres(String genres) {
+        this.genres = genres;
+    }
+
+    public String getPublishers() {
+        return publishers;
+    }
+
+    public void setPublishers(String publishers) {
+        this.publishers = publishers;
+    }
+
+    public String getDevelopers() {
+        return developers;
+    }
+
+    public void setDevelopers(String developers) {
+        this.developers = developers;
+    }
+
+    public String getPlatforms() {
+        return platforms;
+    }
+
+    public void setPlatforms(String platforms) {
+        this.platforms = platforms;
+    }
+
+    public Integer getMetacritic() {
+        return metacritic;
+    }
+
+    public void setMetacritic(Integer metacritic) {
+        this.metacritic = metacritic;
+    }
+
+    public void setGameId(Long gameId) {
+        this.gameId = gameId;
     }
 }
