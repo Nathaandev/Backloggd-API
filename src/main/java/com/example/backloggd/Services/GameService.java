@@ -2,8 +2,10 @@ package com.example.backloggd.Services;
 
 import java.util.List;
 
+import com.example.backloggd.DTO.ObjectsDTO.DevelopersDTO;
 import com.example.backloggd.DTO.ObjectsDTO.GenreDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsWrapperDTO;
+import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
 import com.example.backloggd.Models.GamesModel;
@@ -33,8 +35,16 @@ public class GameService {
             if(rawgResponse == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
+            var bestMatch = rawgResponse.results().get(0);
+            List<GenreDTO> genres = bestMatch.genres();
+            List<PlatformsWrapperDTO> platforms = bestMatch.platforms();
             GamesModel gameFound = new GamesModel();
-            GameDataMappers.ConsolidateGameData(rawgResponse, gameFound, rawgApiService);
+            BeanUtils.copyProperties(bestMatch, gameFound);
+            RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(gameFound.getRawgId());
+            List<DevelopersDTO> developers = gameWithFullDetails.developers();
+            List<PublishersDTO> publishers = gameWithFullDetails.publishers();
+
+            GameDataMappers.ConsolidateGameData(gameFound, gameWithFullDetails, developers, genres, platforms, publishers );
             return ResponseEntity.status(HttpStatus.OK).body(gameRepository.save(gameFound));
 
         }

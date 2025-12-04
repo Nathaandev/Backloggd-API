@@ -39,14 +39,8 @@ public class GameDataMappers {
         }
         return Jsoup.parse(rawHtmlDescription).text();
     }
-    public static void ConsolidateGameData(RawgResponseDTO rawgResponse, GamesModel gameFound, RawgApiService rawgApiService){
-        var bestMatch = rawgResponse.results().get(0);
-        List<GenreDTO> genres = bestMatch.genres();
-        List<PlatformsWrapperDTO> platforms = bestMatch.platforms();
-        BeanUtils.copyProperties(bestMatch, gameFound);
-        RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(gameFound.getRawgId());
-        List<DevelopersDTO> developers = gameWithFullDetails.developers();
-        List<PublishersDTO> publishers = gameWithFullDetails.publishers();
+
+    public static void ConsolidateGameData(GamesModel gameFound, RawgGameDTO gameWithFullDetails, List<DevelopersDTO> developers, List<GenreDTO> genres, List<PlatformsWrapperDTO> platforms, List<PublishersDTO> publishers){
         gameFound.setDevelopers(GameDataMappers.DevelopersToString(developers));
         gameFound.setGenres(GameDataMappers.GenresToString(genres));
         gameFound.setPlatforms(GameDataMappers.PlatformsToString(platforms));
