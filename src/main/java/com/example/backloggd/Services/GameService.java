@@ -3,6 +3,7 @@ package com.example.backloggd.Services;
 
 import java.util.List;
 
+import com.example.backloggd.DTO.GameSummaryDTO;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import com.example.backloggd.DTO.ObjectsDTO.DevelopersDTO;
@@ -54,9 +55,9 @@ public class GameService {
         var game = gamesModelOptional.get();
         return ResponseEntity.ok(game);
     }
-    public Page<GamesModel> searchGameByGenre(String genres, Pageable pageable){
+    public Page<GameSummaryDTO> searchGameByGenre(String genres, Pageable pageable){
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByGenre(genres, pageable);
-        List<GamesModel> gamesFound = GameDataMappers.ConvertRawgResponseToGamesModel(rawgResponse);
+        List<GameSummaryDTO> gamesFound = GameDataMappers.ConvertRawgResponseToGamesModel(rawgResponse);
         return new PageImpl<>(
                 gamesFound,
                 pageable,

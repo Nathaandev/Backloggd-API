@@ -3,6 +3,7 @@ package com.example.backloggd.Util;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.backloggd.DTO.GameSummaryDTO;
 import com.example.backloggd.DTO.ObjectsDTO.DevelopersDTO;
 import com.example.backloggd.DTO.ObjectsDTO.GenreDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsDTO;
@@ -49,10 +50,11 @@ public class GameDataMappers {
         String rawDescription = gameWithFullDetails.gameDescription();
         gameFound.setGameDescription(GameDataMappers.cleanHtmlDescription(rawDescription));
     }
-    public static List<GamesModel> ConvertRawgResponseToGamesModel(RawgResponseDTO rawgResponse){
+    public static List<GameSummaryDTO> ConvertRawgResponseToGamesModel(RawgResponseDTO rawgResponse){
         return rawgResponse.results().stream().map(game -> {
-            GamesModel gameFound = new GamesModel();
-            BeanUtils.copyProperties(game, gameFound);
+            String genre = GameDataMappers.GenresToString(game.genres());
+            String platforms = GameDataMappers.PlatformsToString(game.platforms());
+            GameSummaryDTO gameFound = new GameSummaryDTO(game.rawgId(), game.gameName(), game.releaseDate(), game.metacritic(), genre, platforms);
             return gameFound;
         }).collect(Collectors.toList());
     }

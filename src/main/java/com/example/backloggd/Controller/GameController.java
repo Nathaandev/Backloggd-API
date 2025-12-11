@@ -2,6 +2,7 @@ package com.example.backloggd.Controller;
 
 import java.util.List;
 
+import com.example.backloggd.DTO.GameSummaryDTO;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +25,8 @@ public class GameController {
         return gameService.searchGame(gameName);
     }
     @GetMapping("/search")
-    public ResponseEntity<Page<GamesModel>> searchGamesByGenre(@RequestParam String genres, Pageable pageable){
-        Page<GamesModel> gamesPage = gameService.searchGameByGenre(genres, pageable);
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByGenre(@RequestParam String genres, Pageable pageable){
+        Page<GameSummaryDTO> gamesPage = gameService.searchGameByGenre(genres, pageable);
 
         return ResponseEntity.ok(gamesPage);
     }
