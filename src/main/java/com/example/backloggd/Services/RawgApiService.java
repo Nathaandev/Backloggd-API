@@ -3,6 +3,7 @@ package com.example.backloggd.Services;
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -59,13 +60,16 @@ public class RawgApiService {
             return null;
         }
     }
-    public RawgResponseDTO getGamesByGenre(String genres){
+    public RawgResponseDTO getGamesByGenre(String genres, Pageable pageable){
+        int rawgPageNumber = pageable.getPageNumber() + 1;
+
         return webClient.get()
                         .uri(uriBuilder -> uriBuilder.path("/games")
                                                      .queryParam("genres", genres)
                                                      .queryParam("key", apiKey)
                                                      //Set the page size to 20
                                                      .queryParam("page_size", "20")
+                                                     .queryParam("page", rawgPageNumber)
                                                      .build())
                         .retrieve()
                         .bodyToMono(RawgResponseDTO.class)

@@ -14,6 +14,7 @@ import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Services.RawgApiService;
 import org.jsoup.Jsoup;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
 
 public class GameDataMappers {
 
@@ -47,6 +48,13 @@ public class GameDataMappers {
         gameFound.setPublishers(GameDataMappers.PublishersToString(publishers));
         String rawDescription = gameWithFullDetails.gameDescription();
         gameFound.setGameDescription(GameDataMappers.cleanHtmlDescription(rawDescription));
+    }
+    public static List<GamesModel> ConvertRawgResponseToGamesModel(RawgResponseDTO rawgResponse){
+        return rawgResponse.results().stream().map(game -> {
+            GamesModel gameFound = new GamesModel();
+            BeanUtils.copyProperties(game, gameFound);
+            return gameFound;
+        }).collect(Collectors.toList());
     }
 
 }

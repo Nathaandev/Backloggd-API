@@ -1,8 +1,10 @@
 package com.example.backloggd.Services;
 
-import java.awt.print.Pageable;
+
 import java.util.List;
 
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import com.example.backloggd.DTO.ObjectsDTO.DevelopersDTO;
 import com.example.backloggd.DTO.ObjectsDTO.GenreDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsWrapperDTO;
@@ -18,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.example.backloggd.Util.GameDataMappers;
-import org.jsoup.Jsoup;
 
 @Service
 public class GameService {
@@ -52,5 +53,14 @@ public class GameService {
         }
         var game = gamesModelOptional.get();
         return ResponseEntity.ok(game);
+    }
+    public Page<GamesModel> searchGameByGenre(String genres, Pageable pageable){
+        RawgResponseDTO rawgResponse = rawgApiService.getGamesByGenre(genres, pageable);
+        List<GamesModel> gamesFound = GameDataMappers.ConvertRawgResponseToGamesModel(rawgResponse);
+        return new PageImpl<>(
+                gamesFound,
+                pageable,
+                rawgResponse.count()
+        );
     }
 }
