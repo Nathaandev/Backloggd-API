@@ -47,7 +47,7 @@ public class RawgApiService {
                                                          .build(rawgId))
                             .retrieve()
                             .onStatus(HttpStatusCode::isError, ClientResponse -> {
-                                System.out.println("RAWG API return a HTTP error. " + ClientResponse.statusCode());
+                                System.out.println("RAWG API returned a HTTP error. " + ClientResponse.statusCode());
                                 return Mono.empty();
                             })
                             .bodyToMono(RawgGameDTO.class)
@@ -59,5 +59,15 @@ public class RawgApiService {
             return null;
         }
     }
-
+    public RawgResponseDTO getGamesByGenre(String genres){
+        return webClient.get()
+                        .uri(uriBuilder -> uriBuilder.path("/games")
+                                                     .queryParam("genres", genres)
+                                                     .queryParam("key", apiKey)
+                                                     .queryParam("page_size", "20")
+                                                     .build())
+                        .retrieve()
+                        .bodyToMono(RawgResponseDTO.class)
+                        .block();
+    }
 }
