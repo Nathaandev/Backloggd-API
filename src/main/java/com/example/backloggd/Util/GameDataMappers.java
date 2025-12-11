@@ -12,9 +12,11 @@ import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
 import com.example.backloggd.Models.GamesModel;
+import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Services.RawgApiService;
 import org.jsoup.Jsoup;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
 public class GameDataMappers {
@@ -56,7 +58,7 @@ public class GameDataMappers {
             String platforms = GameDataMappers.PlatformsToString(game.platforms());
             GameSummaryDTO gameFound = new GameSummaryDTO(game.rawgId(), game.gameName(), game.releaseDate(), game.metacritic(), genre, platforms);
             return gameFound;
+
         }).collect(Collectors.toList());
     }
-
 }
