@@ -1,5 +1,6 @@
 package com.example.backloggd.Services;
 
+import java.awt.print.Pageable;
 import java.util.List;
 
 import com.example.backloggd.DTO.ObjectsDTO.DevelopersDTO;
@@ -12,6 +13,7 @@ import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Repository.GameRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,5 @@ public class GameService {
         }
         var game = gamesModelOptional.get();
         return ResponseEntity.ok(game);
-
     }
 }

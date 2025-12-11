@@ -64,6 +64,7 @@ public class RawgApiService {
                         .uri(uriBuilder -> uriBuilder.path("/games")
                                                      .queryParam("genres", genres)
                                                      .queryParam("key", apiKey)
+                                                     //Set the page size to 20
                                                      .queryParam("page_size", "20")
                                                      .build())
                         .retrieve()
