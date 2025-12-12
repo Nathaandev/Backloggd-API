@@ -2,6 +2,7 @@ package com.example.backloggd.Services;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import com.example.backloggd.DTO.GameSummaryDTO;
 import org.springframework.data.domain.PageImpl;
@@ -28,8 +29,11 @@ public class GameService {
     GameRepository gameRepository;
     private final RawgApiService rawgApiService;
 
-    public GameService(RawgApiService rawgApiService) {
+    private final GameDataMappers mapper;
+
+    public GameService(RawgApiService rawgApiService, GameDataMappers mapper){
         this.rawgApiService = rawgApiService;
+        this.mapper = mapper;
     }
 
     public ResponseEntity<GamesModel> searchGame(String gameName) {
@@ -57,7 +61,18 @@ public class GameService {
     }
     public Page<GameSummaryDTO> searchGameByGenre(String genres, Pageable pageable){
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByGenre(genres, pageable);
-        List<GameSummaryDTO> gamesFound = GameDataMappers.ConvertRawgResponseToGamesModel(rawgResponse);
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+
+        //Check if the game is in the database, if it isn't, saves it.
+        for (GameSummaryDTO gameSummaryDTO : gamesFound){
+            Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
+            if (gameOptional.isEmpty()){
+                GamesModel game = new GamesModel();
+                BeanUtils.copyProperties(gameSummaryDTO, game);
+                gameRepository.save(game);
+            }
+        }
+
         return new PageImpl<>(
                 gamesFound,
                 pageable,

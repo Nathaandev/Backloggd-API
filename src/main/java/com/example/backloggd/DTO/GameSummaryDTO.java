@@ -1,5 +1,7 @@
 package com.example.backloggd.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public record GameSummaryDTO(
         Integer rawgId,
 
@@ -11,6 +13,15 @@ public record GameSummaryDTO(
 
         String genres,
 
-        String platforms
+        String platforms,
+
+        @JsonIgnore
+        String gameDescription,
+
+        @JsonIgnore
+        String developers,
+
+        @JsonIgnore
+        String publishers
 ) {
 }

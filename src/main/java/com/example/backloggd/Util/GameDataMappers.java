@@ -18,8 +18,14 @@ import org.jsoup.Jsoup;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Component;
 
+@Component
 public class GameDataMappers {
+    private final RawgApiService rawgApiService;
+    public GameDataMappers(RawgApiService rawgApiService) {
+        this.rawgApiService = rawgApiService;
+    }
 
     public static String GenresToString(List<GenreDTO> genres){
         return genres.stream()
@@ -52,13 +58,17 @@ public class GameDataMappers {
         String rawDescription = gameWithFullDetails.gameDescription();
         gameFound.setGameDescription(GameDataMappers.cleanHtmlDescription(rawDescription));
     }
-    public static List<GameSummaryDTO> ConvertRawgResponseToGamesModel(RawgResponseDTO rawgResponse){
+    public List<GameSummaryDTO> ConvertRawgResponseToGamesModel(RawgResponseDTO rawgResponse){
         return rawgResponse.results().stream().map(game -> {
+
+            RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(game.rawgId());
+            String rawDescription = gameWithFullDetails.gameDescription();
             String genre = GameDataMappers.GenresToString(game.genres());
             String platforms = GameDataMappers.PlatformsToString(game.platforms());
-            GameSummaryDTO gameFound = new GameSummaryDTO(game.rawgId(), game.gameName(), game.releaseDate(), game.metacritic(), genre, platforms);
+            GameSummaryDTO gameFound = new GameSummaryDTO(game.rawgId(), game.gameName(), game.releaseDate(), game.metacritic(), genre, platforms,
+                    GameDataMappers.cleanHtmlDescription(rawDescription), GameDataMappers.DevelopersToString(gameWithFullDetails.developers()),
+                    GameDataMappers.PublishersToString(gameWithFullDetails.publishers()));
             return gameFound;
-
         }).collect(Collectors.toList());
     }
 }
