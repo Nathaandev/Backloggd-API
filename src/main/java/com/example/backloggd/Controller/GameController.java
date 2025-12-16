@@ -1,7 +1,5 @@
 package com.example.backloggd.Controller;
 
-import java.util.List;
-
 import com.example.backloggd.DTO.GameSummaryDTO;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Services.GameService;
