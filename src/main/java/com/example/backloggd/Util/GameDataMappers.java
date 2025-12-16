@@ -2,7 +2,6 @@ package com.example.backloggd.Util;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import com.example.backloggd.DTO.GameSummaryDTO;
 import com.example.backloggd.DTO.ObjectsDTO.DevelopersDTO;
 import com.example.backloggd.DTO.ObjectsDTO.GenreDTO;
@@ -12,13 +11,9 @@ import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
 import com.example.backloggd.Models.GamesModel;
-import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Services.RawgApiService;
-import org.jsoup.Jsoup;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
+import org.jsoup.*;
 
 @Component
 public class GameDataMappers {

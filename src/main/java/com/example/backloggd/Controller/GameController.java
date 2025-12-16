@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/games")
 public class GameController {
+
     @Autowired
     GameService gameService;
+
     @GetMapping("/search/{gameName}")
     public ResponseEntity<GamesModel> searchGame(@PathVariable String gameName) {
         return gameService.searchGame(gameName);
