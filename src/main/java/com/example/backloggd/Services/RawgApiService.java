@@ -87,6 +87,20 @@ public class RawgApiService {
                 .retrieve()
                 .bodyToMono(RawgResponseDTO.class)
                 .block();
+    }
+    public RawgResponseDTO getGamesByPublisers(String publishers, Pageable pageable){
+        int rawPageNumber = pageable.getPageNumber() + 1;
+
+        return webClient.get()
+                        .uri(uriBuilder -> uriBuilder.path("/games")
+                                .queryParam("publishers", publishers)
+                                .queryParam("key", apiKey)
+                                .queryParam("page_size", "20")
+                                .queryParam("page", rawPageNumber)
+                                .build())
+                .retrieve()
+                .bodyToMono(RawgResponseDTO.class)
+                .block();
 
     }
 }
