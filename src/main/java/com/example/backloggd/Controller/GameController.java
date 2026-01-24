@@ -30,4 +30,10 @@ public class GameController {
 
         return ResponseEntity.ok(gamesPage);
     }
+    @GetMapping("/search/dev")
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByDeveloper(@RequestParam String developer, Pageable pageable){
+        Page<GameSummaryDTO> gamesPage = gameService.searchGameByDeveloper(developer, pageable);
+
+        return ResponseEntity.ok(gamesPage);
+    }
 }
