@@ -79,7 +79,7 @@ public class RawgApiService {
 
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/games")
-                                            .queryParam("developer", developers)
+                                            .queryParam("developers", developers)
                                             .queryParam("key", apiKey)
                                             .queryParam("page_size", "20")
                                             .queryParam("page", rawgPageNumber)
