@@ -74,16 +74,16 @@ public class RawgApiService {
                         .bodyToMono(RawgResponseDTO.class)
                         .block();
     }
-    public RawgResponseDTO getGamesByDeveloper(String developer, Pageable pageable){
+    public RawgResponseDTO getGamesByDeveloper(String developers, Pageable pageable){
         int rawgPageNumber = pageable.getPageNumber() + 1;
 
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/games")
-                        .queryParam("developers", developer)
-                        .queryParam("apiKey", apiKey)
-                        .queryParam("page_size", "20")
-                        .queryParam("page", rawgPageNumber)
-                        .build())
+                                            .queryParam("developer", developers)
+                                            .queryParam("key", apiKey)
+                                            .queryParam("page_size", "20")
+                                            .queryParam("page", rawgPageNumber)
+                                            .build())
                 .retrieve()
                 .bodyToMono(RawgResponseDTO.class)
                 .block();
