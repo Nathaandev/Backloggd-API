@@ -79,4 +79,14 @@ public class GameService {
                 rawgResponse.count()
         );
     }
+    public Page<GameSummaryDTO> searchGameByDeveloper(String developer, Pageable pageable){
+        RawgResponseDTO rawgResponse = rawgApiService.getGamesByDeveloper(developer, pageable);
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+
+        return new PageImpl<>(
+                gamesFound,
+                pageable,
+                rawgResponse.count()
+        );
+    }
 }
