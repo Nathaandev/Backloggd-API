@@ -63,7 +63,7 @@ public class GameService {
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByGenre(genres, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
 
-        //Check if the game is in the database, if it isn't, saves it.
+        //Check if the game is in the database, if it isn't, saves i1t.
         for (GameSummaryDTO gameSummaryDTO : gamesFound){
             Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
             if (gameOptional.isEmpty()){
