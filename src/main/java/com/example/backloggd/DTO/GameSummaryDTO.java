@@ -18,8 +18,7 @@ public record GameSummaryDTO(
 
         @JsonIgnore
         String gameDescription,
-
-        @JsonIgnore
+        
         String developers,
 
         @JsonIgnore
