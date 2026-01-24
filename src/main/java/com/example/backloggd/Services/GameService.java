@@ -1,8 +1,9 @@
 package com.example.backloggd.Services;
 
 
-import java.util.List;
+import java.util.Iterator;import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.example.backloggd.DTO.GameSummaryDTO;
 import org.springframework.data.domain.PageImpl;
@@ -18,6 +19,7 @@ import com.example.backloggd.Repository.GameRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -96,5 +98,19 @@ public class GameService {
                 pageable,
                 rawgResponse.count()
         );
+    }
+
+    public Page<GameSummaryDTO> searchGamesByPublishers(String publishers, Pageable pageable){
+        RawgResponseDTO rawgResponse = rawgApiService.getGamesByPublisers(publishers, pageable);
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+
+
+        return new PageImpl<>(
+                gamesFound,
+                pageable,
+                rawgResponse.count()
+        );
+
+
     }
 }
