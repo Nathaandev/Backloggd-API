@@ -36,4 +36,9 @@ public class GameController {
 
         return ResponseEntity.ok(gamesPage);
     }
+    @GetMapping("/search/pub")
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByPublisher(@RequestParam String publishers, Pageable pageable){
+        Page<GameSummaryDTO> gamesPage = gameService.searchGamesByPublishers(publishers, pageable);
+        return ResponseEntity.ok(gamesPage);
+    }
 }
