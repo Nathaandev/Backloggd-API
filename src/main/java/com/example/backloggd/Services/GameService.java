@@ -100,8 +100,8 @@ public class GameService {
         );
     }
 
-    public Page<GameSummaryDTO> searchGamesByPublishers(String publishers, Pageable pageable){
-        RawgResponseDTO rawgResponse = rawgApiService.getGamesByPublisers(publishers, pageable);
+    public Page<GameSummaryDTO> searchGamesByPublishers(String publisher, Pageable pageable){
+        RawgResponseDTO rawgResponse = rawgApiService.getGamesByPublishers(publisher, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
 
 

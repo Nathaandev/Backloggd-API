@@ -74,33 +74,35 @@ public class RawgApiService {
                         .bodyToMono(RawgResponseDTO.class)
                         .block();
     }
-    public RawgResponseDTO getGamesByDeveloper(String developers, Pageable pageable){
+    public RawgResponseDTO getGamesByDeveloper(String developer, Pageable pageable){
         int rawgPageNumber = pageable.getPageNumber() + 1;
 
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/games")
-                                            .queryParam("developers", developers)
-                                            .queryParam("key", apiKey)
-                                            .queryParam("page_size", "20")
-                                            .queryParam("page", rawgPageNumber)
-                                            .build())
-                .retrieve()
-                .bodyToMono(RawgResponseDTO.class)
-                .block();
+                        .uri(uriBuilder -> uriBuilder.path("/games")
+                                                     .queryParam("developers", developer)
+                                                     .queryParam("key", apiKey)
+                                                     //Set the page size to 20
+                                                     .queryParam("page_size", "20")
+                                                     .queryParam("page", rawgPageNumber)
+                                                     .build())
+                        .retrieve()
+                        .bodyToMono(RawgResponseDTO.class)
+                        .block();
     }
-    public RawgResponseDTO getGamesByPublisers(String publishers, Pageable pageable){
-        int rawPageNumber = pageable.getPageNumber() + 1;
+    public RawgResponseDTO getGamesByPublishers(String publisher, Pageable pageable){
+        int rawgPageNumber = pageable.getPageNumber() + 1;
 
         return webClient.get()
                         .uri(uriBuilder -> uriBuilder.path("/games")
-                                .queryParam("publisher", publishers)
-                                .queryParam("key", apiKey)
-                                .queryParam("page_size", "20")
-                                .queryParam("page", rawPageNumber)
-                                .build())
-                .retrieve()
-                .bodyToMono(RawgResponseDTO.class)
-                .block();
+                                                     .queryParam("publishers", publisher)
+                                                     .queryParam("key", apiKey)
+                                                     //Set the page size to 20
+                                                     .queryParam("page_size", "20")
+                                                     .queryParam("page", rawgPageNumber)
+                                                     .build())
+                        .retrieve()
+                        .bodyToMono(RawgResponseDTO.class)
+                        .block();
 
     }
 }

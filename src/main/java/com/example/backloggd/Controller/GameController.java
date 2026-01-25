@@ -24,7 +24,7 @@ public class GameController {
     public ResponseEntity<GamesModel> searchGame(@PathVariable String gameName) {
         return gameService.searchGame(gameName);
     }
-    @GetMapping("/search")
+    @GetMapping("/search/gen")
     public ResponseEntity<Page<GameSummaryDTO>> searchGamesByGenre(@RequestParam String genres, Pageable pageable){
         Page<GameSummaryDTO> gamesPage = gameService.searchGameByGenre(genres, pageable);
 
@@ -37,8 +37,8 @@ public class GameController {
         return ResponseEntity.ok(gamesPage);
     }
     @GetMapping("/search/pub")
-    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByPublisher(@RequestParam String publishers, Pageable pageable){
-        Page<GameSummaryDTO> gamesPage = gameService.searchGamesByPublishers(publishers, pageable);
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByPublisher(@RequestParam String publisher, Pageable pageable){
+        Page<GameSummaryDTO> gamesPage = gameService.searchGamesByPublishers(publisher, pageable);
         return ResponseEntity.ok(gamesPage);
     }
 }
