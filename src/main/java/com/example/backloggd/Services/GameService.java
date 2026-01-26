@@ -104,6 +104,14 @@ public class GameService {
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByPublishers(publisher, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
 
+        for (GameSummaryDTO gameSummaryDTO : gamesFound){
+            Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
+            if (gameOptional.isEmpty()){
+                GamesModel game = new GamesModel();
+                BeanUtils.copyProperties(gameSummaryDTO, game);
+                gameRepository.save(game);
+            }
+        }
 
         return new PageImpl<>(
                 gamesFound,
