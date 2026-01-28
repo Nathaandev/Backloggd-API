@@ -3,6 +3,7 @@ package com.example.backloggd.Models;
 import java.util.Collection;
 import java.util.List;
 
+import com.example.backloggd.Enum.UserRoles;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,7 +28,7 @@ public class UserModel implements UserDetails {
     private String password;
 
     @Column(nullable = false)
-    private String role;
+    private UserRoles role;
 
     public Long getId() {
         return id;
@@ -60,11 +61,7 @@ public class UserModel implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
+    
     public void setLogin(String login) {
         this.login = login;
     }
