@@ -122,8 +122,8 @@ public class GameService {
 
     }
 
-    public Page<GameSummaryDTO> searchGamesByMetacritic(Pageable pageable){
-        RawgResponseDTO rawgResponse = rawgApiService.getGamesByMetacritic(pageable);
+    public Page<GameSummaryDTO> searchGamesByMetacritic(String ordering, Pageable pageable){
+        RawgResponseDTO rawgResponse = rawgApiService.getGamesByMetacritic(ordering, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
 
         return new PageImpl<>(

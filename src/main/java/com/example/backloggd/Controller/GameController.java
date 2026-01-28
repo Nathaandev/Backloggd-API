@@ -43,8 +43,8 @@ public class GameController {
     }
 
     @GetMapping("/search/metacritic")
-    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByMetacritic(Pageable pageable){
-        Page<GameSummaryDTO> gamesPage = gameService.searchGamesByMetacritic(pageable);
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByMetacritic(@RequestParam String ordering, Pageable pageable){
+        Page<GameSummaryDTO> gamesPage = gameService.searchGamesByMetacritic(ordering, pageable);
         return ResponseEntity.ok(gamesPage);
     }
 }
