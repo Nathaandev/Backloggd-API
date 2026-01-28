@@ -125,10 +125,8 @@ public class GameService {
     public Page<GameSummaryDTO> searchGamesByMetacritic(String ordering, Pageable pageable){
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByMetacritic(ordering, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+        gamesFound.removeIf(game -> game.metacritic() == null);
         for (GameSummaryDTO gameSummaryDTO : gamesFound){
-            if (gameSummaryDTO.metacritic() == null){
-                gamesFound.remove(gameSummaryDTO);
-            }
             Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
             if (gameOptional.isEmpty()){
                 GamesModel game = new GamesModel();
