@@ -121,4 +121,15 @@ public class GameService {
 
 
     }
+
+    public Page<GameSummaryDTO> searchGamesByMetacritic(Pageable pageable){
+        RawgResponseDTO rawgResponse = rawgApiService.getGamesByMetacritic(pageable);
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+
+        return new PageImpl<>(
+                gamesFound,
+                pageable,
+                rawgResponse.count()
+        );
+    }
 }
