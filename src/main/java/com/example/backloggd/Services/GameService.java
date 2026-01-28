@@ -129,6 +129,12 @@ public class GameService {
             if (gameSummaryDTO.metacritic() == null){
                 gamesFound.remove(gameSummaryDTO);
             }
+            Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
+            if (gameOptional.isEmpty()){
+                GamesModel game = new GamesModel();
+                BeanUtils.copyProperties(gameSummaryDTO, game);
+                gameRepository.save(game);
+            }
 
         }
 
