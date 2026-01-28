@@ -105,12 +105,12 @@ public class RawgApiService {
                         .block();
 
     }
-    public RawgResponseDTO getGamesByMetacritic(Integer metacritic, Pageable pageable){
+    public RawgResponseDTO getGamesByMetacritic(Pageable pageable){
         int rawgPageNumber = pageable.getPageNumber() + 1;
 
         return webClient.get()
                         .uri(uriBuilder -> uriBuilder.path("games")
-                                .queryParam("metacritic", metacritic)
+                                .queryParam("ordering", "-metacritic" )
                                 .queryParam("key", apiKey)
                                 .queryParam("page_size", "20")
                                 .queryParam("page", rawgPageNumber)
