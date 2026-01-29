@@ -4,7 +4,8 @@ import java.util.Optional;
 
 import com.example.backloggd.Models.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public interface UserRepository extends JpaRepository<UserModel, Long> {
-    Optional<UserModel> findByUsername(String username);
+    UserDetails findByLogin(String login);
 }

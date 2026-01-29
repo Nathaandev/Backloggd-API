@@ -61,14 +61,15 @@ public class UserModel implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-    
+
     public void setLogin(String login) {
         this.login = login;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        if (this.role == UserRoles.ADMIN) {return List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"), new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")) ;}
+        else return List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"));
     }
 
     public String getPassword() {
