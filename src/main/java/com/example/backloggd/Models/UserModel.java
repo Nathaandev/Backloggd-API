@@ -3,7 +3,6 @@ package com.example.backloggd.Models;
 import java.util.Collection;
 import java.util.List;
 
-import com.example.backloggd.Enum.UserRoles;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
