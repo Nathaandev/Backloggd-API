@@ -31,6 +31,7 @@ public record RawgGameDTO(
         List<GenreDTO> genres,
 
         List<PlatformsWrapperDTO> platforms
+
          ){}
 
 
