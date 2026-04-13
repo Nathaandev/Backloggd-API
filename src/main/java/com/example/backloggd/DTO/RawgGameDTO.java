@@ -7,6 +7,7 @@ import com.example.backloggd.DTO.ObjectsDTO.GenreDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsWrapperDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
+import com.example.backloggd.DTO.ObjectsDTO.TagsDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record RawgGameDTO(
@@ -30,7 +31,9 @@ public record RawgGameDTO(
 
         List<GenreDTO> genres,
 
-        List<PlatformsWrapperDTO> platforms
+        List<PlatformsWrapperDTO> platforms,
+
+        List<TagsDTO> tags
 
          ){}
 
