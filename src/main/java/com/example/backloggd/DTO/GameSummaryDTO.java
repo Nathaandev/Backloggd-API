@@ -21,6 +21,8 @@ public record GameSummaryDTO(
 
         String developers,
 
-        String publishers
+        String publishers,
+
+        String tags
 ) {
 }

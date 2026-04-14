@@ -8,6 +8,7 @@ import com.example.backloggd.DTO.ObjectsDTO.GenreDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsWrapperDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
+import com.example.backloggd.DTO.ObjectsDTO.TagsDTO;
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
 import com.example.backloggd.Models.GamesModel;
@@ -38,6 +39,9 @@ public class GameDataMappers {
         return developers.stream().map(DevelopersDTO::name).collect(Collectors.joining(", "));
 
     }
+    public static String TagsToString(List<TagsDTO> tags){
+        return tags.stream().map(TagsDTO::name).collect(Collectors.joining(", "));
+    }
     public static String cleanHtmlDescription (String rawHtmlDescription){
         if (rawHtmlDescription == null || rawHtmlDescription.isEmpty()) {
             return "";
@@ -60,9 +64,10 @@ public class GameDataMappers {
             String rawDescription = gameWithFullDetails.gameDescription();
             String genre = GameDataMappers.GenresToString(game.genres());
             String platforms = GameDataMappers.PlatformsToString(game.platforms());
+            String tags = GameDataMappers.TagsToString(game.tags());
             GameSummaryDTO gameFound = new GameSummaryDTO(game.rawgId(), game.gameName(), game.releaseDate(), game.metacritic(), genre, platforms,
                     GameDataMappers.cleanHtmlDescription(rawDescription), GameDataMappers.DevelopersToString(gameWithFullDetails.developers()),
-                    GameDataMappers.PublishersToString(gameWithFullDetails.publishers()));
+                    GameDataMappers.PublishersToString(gameWithFullDetails.publishers()), tags);
             return gameFound;
         }).collect(Collectors.toList());
     }
