@@ -2,7 +2,7 @@ package com.example.backloggd.DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-//Used if i'm making a a requisition that receive many games
+//Used if i am making a requisition that receive many games
 public record GameSummaryDTO(
         Integer rawgId,
 
