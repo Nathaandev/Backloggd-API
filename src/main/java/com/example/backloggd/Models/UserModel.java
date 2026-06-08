@@ -48,8 +48,7 @@ public class UserModel {
         this.userEmail = userEmail;
     }
 
-    public UserModel(Long userId, String userName, String password, String userEmail) {
-        this.userId = userId;
+    public UserModel(String userName, String password, String userEmail) {
         this.userName = userName;
         this.password = password;
         this.userEmail = userEmail;
