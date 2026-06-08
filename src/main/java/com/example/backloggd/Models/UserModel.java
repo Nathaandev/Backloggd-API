@@ -1,5 +1,6 @@
 package com.example.backloggd.Models;
 
+import com.example.backloggd.DTO.UserRegistrationDTO;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +16,9 @@ public class UserModel {
     private String password;
 
     private String userEmail;
+
+    public UserModel(UserRegistrationDTO userRegistrationDTO) {
+    }
 
     public Long getUserId() {
         return userId;
