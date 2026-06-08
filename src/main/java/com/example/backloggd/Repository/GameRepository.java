@@ -9,6 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface GameRepository extends JpaRepository<GamesModel, Integer> {
+public interface GameRepository extends JpaRepository<GamesModel, Long> {
    Optional<GamesModel> findBygameNameIgnoreCase(String gameName);
 }
