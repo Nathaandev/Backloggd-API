@@ -3,8 +3,8 @@ package com.example.backloggd.Services;
 import com.example.backloggd.DTO.UserRegistrationDTO;
 import com.example.backloggd.Models.UserModel;
 import com.example.backloggd.Repository.UserRepository;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,16 +12,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final GameService gameService;
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, GameService gameService) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.gameService = gameService;
     }
 
     public ResponseEntity<UserModel> signUp(UserRegistrationDTO userRegistrationDTO){
@@ -35,6 +35,13 @@ public class UserService implements UserDetailsService {
             .password(user.getPassword())
             .roles("USER")
             .build();
+    }
+
+    public ResponseEntity<UserModel> addGameToWishlist(String gameName, Authentication authentication){
+        var gamesModel = (gameService.searchGame(gameName));
+        UserModel user = userRepository.findByUserName(authentication.getName());
+        user.getWishlist().add(gamesModel.getBody());
+        return ResponseEntity.ok(userRepository.save(user));
     }
 
 }

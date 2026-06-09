@@ -4,6 +4,8 @@ import com.example.backloggd.DTO.UserRegistrationDTO;
 import com.example.backloggd.Models.UserModel;
 import com.example.backloggd.Services.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,5 +21,9 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<UserModel> signup(@RequestBody UserRegistrationDTO userRegistrationDTO){
         return userService.signUp(userRegistrationDTO);
+    }
+    @PostMapping("/wishlist/{gameName}")
+    public ResponseEntity<UserModel> addToWishlist(@PathVariable String gameName, Authentication authentication){
+       return userService.addGameToWishlist(gameName, authentication);
     }
 }
