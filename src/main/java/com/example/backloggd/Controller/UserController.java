@@ -5,10 +5,9 @@ import com.example.backloggd.Models.UserModel;
 import com.example.backloggd.Services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class UserController {
@@ -25,5 +24,9 @@ public class UserController {
     @PostMapping("/wishlist/{gameName}")
     public ResponseEntity<UserModel> addToWishlist(@PathVariable String gameName, Authentication authentication){
        return userService.addGameToWishlist(gameName, authentication);
+    }
+    @GetMapping("/userwishlist")
+    public ResponseEntity<List<String>> getUserWishlist(Authentication authentication){
+        return userService.getUserWishlist(authentication);
     }
 }

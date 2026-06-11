@@ -1,8 +1,10 @@
 package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.UserRegistrationDTO;
+import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.UserModel;
 import com.example.backloggd.Repository.UserRepository;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -11,6 +13,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -43,5 +48,14 @@ public class UserService implements UserDetailsService {
         user.getWishlist().add(gamesModel.getBody());
         return ResponseEntity.ok(userRepository.save(user));
     }
+    public ResponseEntity<List<String>> getUserWishlist(Authentication authentication) {
+        UserModel user = userRepository.findByUserName(authentication.getName());
+        List<String> gameNames = new ArrayList<>();
+        for (GamesModel game : user.getWishlist()) {
+            gameNames.add(game.getGameName());
+        }
+        return ResponseEntity.ok(gameNames);
+    }
+
 
 }
