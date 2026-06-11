@@ -22,7 +22,7 @@ public class UserController {
         return userService.signUp(userRegistrationDTO);
     }
     @PostMapping("/wishlist/{gameName}")
-    public ResponseEntity<UserModel> addToWishlist(@PathVariable String gameName, Authentication authentication){
+    public ResponseEntity<String> addToWishlist(@PathVariable String gameName, Authentication authentication){
        return userService.addGameToWishlist(gameName, authentication);
     }
     @GetMapping("/userwishlist")
