@@ -29,4 +29,8 @@ public class UserController {
     public ResponseEntity<List<String>> getUserWishlist(Authentication authentication){
         return userService.getUserWishlist(authentication);
     }
+    @DeleteMapping("/removefromwishlist/{gameName}")
+    public ResponseEntity<String> removeGameFromWishlist(@PathVariable String gameName, Authentication authentication){
+        return userService.removeGameFromWishlist(gameName, authentication);
+    }
 }

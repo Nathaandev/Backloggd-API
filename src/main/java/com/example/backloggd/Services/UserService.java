@@ -3,6 +3,7 @@ package com.example.backloggd.Services;
 import com.example.backloggd.DTO.UserRegistrationDTO;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.UserModel;
+import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Repository.UserRepository;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -16,17 +17,20 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final GameService gameService;
+    private final GameRepository gameRepository;
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, GameService gameService) {
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, GameService gameService, GameRepository gameRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.gameService = gameService;
+        this.gameRepository = gameRepository;
     }
 
     public ResponseEntity<UserModel> signUp(UserRegistrationDTO userRegistrationDTO){
@@ -56,6 +60,14 @@ public class UserService implements UserDetailsService {
             gameNames.add(game.getGameName());
         }
         return ResponseEntity.ok(gameNames);
+    }
+
+    public ResponseEntity<String> removeGameFromWishlist(String gameName, Authentication authentication){
+        var gamesModel = gameRepository.findBygameNameIgnoreCase(gameName);
+        UserModel user =  userRepository.findByUserName(authentication.getName());
+        user.getWishlist().remove(gamesModel.get());
+        userRepository.save(user);
+        return ResponseEntity.ok("Game deleted.");
     }
 
 
