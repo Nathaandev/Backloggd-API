@@ -2,6 +2,8 @@ package com.example.backloggd.Models;
 
 import jakarta.persistence.*;
 
+import java.util.Optional;
+
 @Entity
 @Table(name = "reviews")
 public class ReviewModel {

@@ -11,5 +11,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GameRepository extends JpaRepository<GamesModel, Long> {
 
-  Optional<GamesModel>findBygameNameIgnoreCase(String gameName);
+  Optional<GamesModel> findBygameNameIgnoreCase(String gameName);
 }

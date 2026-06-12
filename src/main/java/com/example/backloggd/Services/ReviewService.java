@@ -1,0 +1,35 @@
+package com.example.backloggd.Services;
+
+import com.example.backloggd.DTO.GameReviewDTO;
+import com.example.backloggd.Models.ReviewModel;
+import com.example.backloggd.Repository.GameRepository;
+import com.example.backloggd.Repository.ReviewRepository;
+import com.example.backloggd.Repository.UserRepository;
+import org.springframework.beans.BeanUtils;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ReviewService {
+    private final GameRepository gameRepository;
+    private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
+
+    public ReviewService(GameRepository gameRepository, UserRepository userRepository, ReviewRepository reviewRepository) {
+        this.gameRepository = gameRepository;
+        this.userRepository = userRepository;
+        this.reviewRepository = reviewRepository;
+    }
+
+    public ResponseEntity<ReviewModel> publishReviews(String gameName, Authentication authentication, GameReviewDTO gameReviewDTO){
+        var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
+        var game = gamesModelOptional.get();
+        var user = userRepository.findByUserName(authentication.getName());
+        ReviewModel reviewModel = new ReviewModel();
+        BeanUtils.copyProperties(gameReviewDTO, reviewModel);
+        reviewModel.setUserModel(user);
+        reviewModel.setGame(game);
+        return ResponseEntity.ok(reviewRepository.save(reviewModel));
+    }
+}

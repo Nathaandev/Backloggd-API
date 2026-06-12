@@ -6,9 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import org.springframework.http.ResponseEntity;
-
-import java.util.Optional;
 
 @Entity
 @Table(name = "Games")
@@ -38,7 +35,7 @@ public class GamesModel {
 
     private Integer metacritic;
 
-    public GamesModel(Optional<GamesModel> game) {
+    public GamesModel() {
     }
 
     public void setGameName(String gameName) {
