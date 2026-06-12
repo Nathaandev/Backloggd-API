@@ -8,6 +8,8 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Optional;
+
 @Entity
 @Table(name = "Games")
 public class GamesModel {
@@ -35,6 +37,9 @@ public class GamesModel {
     private String platforms;
 
     private Integer metacritic;
+
+    public GamesModel(Optional<GamesModel> game) {
+    }
 
     public void setGameName(String gameName) {
         this.gameName = gameName;

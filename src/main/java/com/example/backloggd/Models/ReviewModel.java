@@ -22,8 +22,7 @@ public class ReviewModel {
     @ManyToOne
     private GamesModel game;
 
-    public ReviewModel(Long id, float rating, String review, int gameTime, UserModel userModel, GamesModel game) {
-        this.id = id;
+    public ReviewModel( float rating, String review, int gameTime, UserModel userModel, GamesModel game) {
         this.rating = rating;
         this.review = review;
         this.gameTime = gameTime;
