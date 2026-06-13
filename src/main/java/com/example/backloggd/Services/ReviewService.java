@@ -1,6 +1,7 @@
 package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.GameReviewDTO;
+import com.example.backloggd.DTO.ReviewResponseDTO;
 import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Repository.ReviewRepository;
@@ -22,7 +23,7 @@ public class ReviewService {
         this.reviewRepository = reviewRepository;
     }
 
-    public ResponseEntity<ReviewModel> publishReviews(String gameName, Authentication authentication, GameReviewDTO gameReviewDTO){
+    public ResponseEntity<ReviewResponseDTO> publishReviews(String gameName, Authentication authentication, GameReviewDTO gameReviewDTO){
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         var game = gamesModelOptional.get();
         var user = userRepository.findByUserName(authentication.getName());
@@ -30,6 +31,14 @@ public class ReviewService {
         BeanUtils.copyProperties(gameReviewDTO, reviewModel);
         reviewModel.setUserModel(user);
         reviewModel.setGame(game);
-        return ResponseEntity.ok(reviewRepository.save(reviewModel));
+        var saved = reviewRepository.save(reviewModel);
+        ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO(saved.getUserModel().getUserName(),
+                saved.getGame().getGameName(),
+                saved.getReview(),
+                saved.getRating(),
+                saved.getGameTime());
+
+        return ResponseEntity.ok(reviewResponseDTO);
+
     }
 }

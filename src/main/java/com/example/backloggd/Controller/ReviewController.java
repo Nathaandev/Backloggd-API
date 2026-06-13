@@ -1,6 +1,7 @@
 package com.example.backloggd.Controller;
 
 import com.example.backloggd.DTO.GameReviewDTO;
+import com.example.backloggd.DTO.ReviewResponseDTO;
 import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Services.ReviewService;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews/{gameName}")
-    public ResponseEntity<ReviewModel> publishReview(@RequestBody GameReviewDTO gameReviewDTO, @PathVariable String gameName,  Authentication authentication){
+    public ResponseEntity<ReviewResponseDTO> publishReview(@RequestBody GameReviewDTO gameReviewDTO, @PathVariable String gameName, Authentication authentication){
        return reviewService.publishReviews(gameName, authentication, gameReviewDTO);
     }
 }
