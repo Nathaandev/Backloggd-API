@@ -13,17 +13,20 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ReviewService {
+    private final GameService gameService;
     private final GameRepository gameRepository;
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
 
-    public ReviewService(GameRepository gameRepository, UserRepository userRepository, ReviewRepository reviewRepository) {
+    public ReviewService(GameService gameService, GameRepository gameRepository, UserRepository userRepository, ReviewRepository reviewRepository) {
+        this.gameService = gameService;
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
     }
 
     public ResponseEntity<ReviewResponseDTO> publishReviews(String gameName, Authentication authentication, GameReviewDTO gameReviewDTO){
+        gameService.searchGame(gameName);
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         var game = gamesModelOptional.get();
         var user = userRepository.findByUserName(authentication.getName());
