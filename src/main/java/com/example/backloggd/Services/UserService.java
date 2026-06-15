@@ -47,9 +47,10 @@ public class UserService implements UserDetailsService {
     }
 
     public ResponseEntity<String> addGameToWishlist(String gameName, Authentication authentication){
-        var gamesModel = (gameService.searchGame(gameName));
+        
+        var gamesModel = gameRepository.findBygameNameIgnoreCase(gameName);
         UserModel user = userRepository.findByUserName(authentication.getName());
-        user.getWishlist().add(gamesModel.getBody());
+        user.getWishlist().add(gamesModel.get());
         userRepository.save(user);
         return ResponseEntity.ok("Game added to wishlist.");
     }

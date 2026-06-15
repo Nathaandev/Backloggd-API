@@ -63,24 +63,7 @@ public class GameService {
 
     public ResponseEntity<GamesModel> searchGame(String gameName) {
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
-        if(gamesModelOptional.isEmpty()) {
-            RawgResponseDTO rawgResponse = rawgApiService.getGames(gameName);
-            if(rawgResponse == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-            var bestMatch = rawgResponse.results().get(0);
-            List<GenreDTO> genres = bestMatch.genres();
-            List<PlatformsWrapperDTO> platforms = bestMatch.platforms();
-            GamesModel gameFound = new GamesModel();
-            BeanUtils.copyProperties(bestMatch, gameFound);
-            RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(gameFound.getRawgId());
-            List<DevelopersDTO> developers = gameWithFullDetails.developers();
-            List<PublishersDTO> publishers = gameWithFullDetails.publishers();
-
-            GameDataMappers.ConsolidateGameData(gameFound, gameWithFullDetails, developers, genres, platforms, publishers );
-            return ResponseEntity.status(HttpStatus.OK).body(gameRepository.save(gameFound));
-
-        }
+        checkIfGameIsInDatabase(gameName);
         var game = gamesModelOptional.get();
         return ResponseEntity.ok(game);
     }
