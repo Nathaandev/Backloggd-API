@@ -26,7 +26,7 @@ public class ReviewService {
     }
 
     public ResponseEntity<ReviewResponseDTO> publishReviews(String gameName, Authentication authentication, GameReviewDTO gameReviewDTO){
-        gameService.searchGame(gameName);
+        gameService.checkIfGameIsInDatabase(gameName);
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         var game = gamesModelOptional.get();
         var user = userRepository.findByUserName(authentication.getName());

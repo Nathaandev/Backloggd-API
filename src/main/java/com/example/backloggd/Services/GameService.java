@@ -37,6 +37,29 @@ public class GameService {
         this.rawgApiService = rawgApiService;
         this.mapper = mapper;
     }
+    public ResponseEntity<String> checkIfGameIsInDatabase(String gameName){
+        var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
+        if(gamesModelOptional.isEmpty()) {
+            RawgResponseDTO rawgResponse = rawgApiService.getGames(gameName);
+            if (rawgResponse == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            var bestMatch = rawgResponse.results().get(0);
+            List<GenreDTO> genres = bestMatch.genres();
+            List<PlatformsWrapperDTO> platforms = bestMatch.platforms();
+            com.example.backloggd.Models.GamesModel gameFound = new com.example.backloggd.Models.GamesModel();
+            BeanUtils.copyProperties(bestMatch, gameFound);
+            RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(gameFound.getRawgId());
+            List<DevelopersDTO> developers = gameWithFullDetails.developers();
+            List<PublishersDTO> publishers = gameWithFullDetails.publishers();
+
+            GameDataMappers.ConsolidateGameData(gameFound, gameWithFullDetails, developers, genres, platforms, publishers);
+            gameRepository.save(gameFound);
+            return ResponseEntity.ok("Game added to database.");
+        } else{
+            return ResponseEntity.ok("Game found in database.");
+        }
+    }
 
     public ResponseEntity<GamesModel> searchGame(String gameName) {
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
