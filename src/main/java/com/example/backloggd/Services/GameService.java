@@ -5,7 +5,10 @@ import java.util.Iterator;import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import com.example.backloggd.DTO.GameResponseDTO;
 import com.example.backloggd.DTO.GameSummaryDTO;
+import com.example.backloggd.Models.ReviewModel;
+import com.example.backloggd.Repository.ReviewRepository;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import com.example.backloggd.DTO.ObjectsDTO.DevelopersDTO;
@@ -30,11 +33,13 @@ public class GameService {
     @Autowired
     GameRepository gameRepository;
     private final RawgApiService rawgApiService;
+    private final ReviewRepository reviewRepository;
 
     private final GameDataMappers mapper;
 
-    public GameService(RawgApiService rawgApiService, GameDataMappers mapper){
+    public GameService(RawgApiService rawgApiService, ReviewRepository reviewRepository, GameDataMappers mapper){
         this.rawgApiService = rawgApiService;
+        this.reviewRepository = reviewRepository;
         this.mapper = mapper;
     }
     public ResponseEntity<String> checkIfGameIsInDatabase(String gameName){
@@ -61,11 +66,13 @@ public class GameService {
         }
     }
 
-    public ResponseEntity<GamesModel> searchGame(String gameName) {
+    public ResponseEntity<GameResponseDTO> searchGame(String gameName) {
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         checkIfGameIsInDatabase(gameName);
         var game = gamesModelOptional.get();
-        return ResponseEntity.ok(game);
+        List<ReviewModel> reviews = reviewRepository.findByGameGameName(gameName);
+        GameResponseDTO gameResponseDTO = new GameResponseDTO(game.getGameName(), game.getGameDescription(), game.getReleaseDate(), game.getPublishers(), game.getMetacritic(), game.getDevelopers(), game.getGenres(), game.getPlatforms(), reviews);
+        return ResponseEntity.ok(gameResponseDTO);
     }
     public Page<GameSummaryDTO> searchGameByGenre(String genres, Pageable pageable){
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByGenre(genres, pageable);

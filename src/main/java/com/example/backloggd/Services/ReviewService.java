@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ReviewService {
     private final GameService gameService;
@@ -32,16 +34,18 @@ public class ReviewService {
         var user = userRepository.findByUserName(authentication.getName());
         ReviewModel reviewModel = new ReviewModel();
         BeanUtils.copyProperties(gameReviewDTO, reviewModel);
-        reviewModel.setUserModel(user);
         reviewModel.setGame(game);
+        reviewModel.setUserModel(user);
+        reviewModel.setGameName(game.getGameName());
+        reviewModel.setUserName(user.getUserName());
         var saved = reviewRepository.save(reviewModel);
-        ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO(saved.getUserModel().getUserName(),
-                saved.getGame().getGameName(),
+        ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO(
+                game.getGameName(),
+                authentication.getName(),
                 saved.getReview(),
                 saved.getRating(),
                 saved.getGameTime());
 
         return ResponseEntity.ok(reviewResponseDTO);
-
     }
 }

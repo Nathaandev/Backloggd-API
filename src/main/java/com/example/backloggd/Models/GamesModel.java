@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
+import java.util.List;
+
 @Entity
 @Table(name = "Games")
 public class GamesModel {
@@ -117,4 +119,5 @@ public class GamesModel {
     public void setGameId(Long gameId) {
         this.gameId = gameId;
     }
+
 }

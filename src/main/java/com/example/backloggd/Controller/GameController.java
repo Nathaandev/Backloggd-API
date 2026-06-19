@@ -1,5 +1,6 @@
 package com.example.backloggd.Controller;
 
+import com.example.backloggd.DTO.GameResponseDTO;
 import com.example.backloggd.DTO.GameSummaryDTO;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Services.GameService;
@@ -21,10 +22,10 @@ public class GameController {
     GameService gameService;
 
     @GetMapping("/search/{gameName}")
-    public ResponseEntity<GamesModel> searchGame(@PathVariable String gameName) {
+    public ResponseEntity<GameResponseDTO> searchGame(@PathVariable String gameName) {
         return gameService.searchGame(gameName);
     }
-    @GetMapping("/search/gen")
+    @GetMapping("/search/genre")
     public ResponseEntity<Page<GameSummaryDTO>> searchGamesByGenre(@RequestParam String genres, Pageable pageable){
         Page<GameSummaryDTO> gamesPage = gameService.searchGameByGenre(genres, pageable);
 
