@@ -36,8 +36,6 @@ public class ReviewService {
         BeanUtils.copyProperties(gameReviewDTO, reviewModel);
         reviewModel.setGame(game);
         reviewModel.setUserModel(user);
-        reviewModel.setGameName(game.getGameName());
-        reviewModel.setUserName(user.getUserName());
         var saved = reviewRepository.save(reviewModel);
         ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO(
                 game.getGameName(),

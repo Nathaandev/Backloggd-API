@@ -12,6 +12,9 @@ import com.example.backloggd.DTO.ObjectsDTO.TagsDTO;
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
 import com.example.backloggd.Models.GamesModel;
+import com.example.backloggd.Models.ReviewModel;
+import com.example.backloggd.Repository.ReviewRepository;
+import com.example.backloggd.Services.GameService;
 import com.example.backloggd.Services.RawgApiService;
 import org.springframework.stereotype.Component;
 import org.jsoup.*;
@@ -19,37 +22,45 @@ import org.jsoup.*;
 @Component
 public class GameDataMappers {
     private final RawgApiService rawgApiService;
-    public GameDataMappers(RawgApiService rawgApiService) {
+    private final ReviewRepository reviewRepository;
+
+    public GameDataMappers(RawgApiService rawgApiService, ReviewRepository reviewRepository) {
         this.rawgApiService = rawgApiService;
+        this.reviewRepository = reviewRepository;
     }
 
-    public static String GenresToString(List<GenreDTO> genres){
+    public static String GenresToString(List<GenreDTO> genres) {
         return genres.stream()
-                     .map(GenreDTO::name)
-                     .collect(Collectors.joining(", "));
+                .map(GenreDTO::name)
+                .collect(Collectors.joining(", "));
     }
-    public static String PlatformsToString(List<PlatformsWrapperDTO> platforms){
+
+    public static String PlatformsToString(List<PlatformsWrapperDTO> platforms) {
         return platforms.stream().map(PlatformsWrapperDTO::platforms)
-                                          .map(PlatformsDTO::name).collect(Collectors.joining(", "));
+                .map(PlatformsDTO::name).collect(Collectors.joining(", "));
     }
-    public static String PublishersToString(List<PublishersDTO> publishers){
+
+    public static String PublishersToString(List<PublishersDTO> publishers) {
         return publishers.stream().map(PublishersDTO::name).collect(Collectors.joining(", "));
     }
-    public static String DevelopersToString(List<DevelopersDTO> developers){
+
+    public static String DevelopersToString(List<DevelopersDTO> developers) {
         return developers.stream().map(DevelopersDTO::name).collect(Collectors.joining(", "));
 
     }
-    public static String TagsToString(List<TagsDTO> tags){
+
+    public static String TagsToString(List<TagsDTO> tags) {
         return tags.stream().map(TagsDTO::name).collect(Collectors.joining(", "));
     }
-    public static String cleanHtmlDescription (String rawHtmlDescription){
+
+    public static String cleanHtmlDescription(String rawHtmlDescription) {
         if (rawHtmlDescription == null || rawHtmlDescription.isEmpty()) {
             return "";
         }
         return Jsoup.parse(rawHtmlDescription).text();
     }
 
-    public static void ConsolidateGameData(GamesModel gameFound, RawgGameDTO gameWithFullDetails, List<DevelopersDTO> developers, List<GenreDTO> genres, List<PlatformsWrapperDTO> platforms, List<PublishersDTO> publishers){
+    public static void ConsolidateGameData(GamesModel gameFound, RawgGameDTO gameWithFullDetails, List<DevelopersDTO> developers, List<GenreDTO> genres, List<PlatformsWrapperDTO> platforms, List<PublishersDTO> publishers) {
         gameFound.setDevelopers(GameDataMappers.DevelopersToString(developers));
         gameFound.setGenres(GameDataMappers.GenresToString(genres));
         gameFound.setPlatforms(GameDataMappers.PlatformsToString(platforms));
@@ -57,7 +68,8 @@ public class GameDataMappers {
         String rawDescription = gameWithFullDetails.gameDescription();
         gameFound.setGameDescription(GameDataMappers.cleanHtmlDescription(rawDescription));
     }
-    public List<GameSummaryDTO> ConvertRawgResponseToGamesModel(RawgResponseDTO rawgResponse){
+
+    public List<GameSummaryDTO> ConvertRawgResponseToGamesModel(RawgResponseDTO rawgResponse) {
         return rawgResponse.results().stream().map(game -> {
 
             RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(game.rawgId());
@@ -65,9 +77,14 @@ public class GameDataMappers {
             String genre = GameDataMappers.GenresToString(game.genres());
             String platforms = GameDataMappers.PlatformsToString(game.platforms());
             String tags = GameDataMappers.TagsToString(game.tags());
+            List<ReviewModel> reviews = reviewRepository.findByGameGameName(game.gameName());
+            double rating = reviews.stream()
+                    .mapToDouble(ReviewModel::getRating)
+                    .average()
+                    .orElse(0.0);
             GameSummaryDTO gameFound = new GameSummaryDTO(game.rawgId(), game.gameName(), game.releaseDate(), game.metacritic(), genre, platforms,
                     GameDataMappers.cleanHtmlDescription(rawDescription), GameDataMappers.DevelopersToString(gameWithFullDetails.developers()),
-                    GameDataMappers.PublishersToString(gameWithFullDetails.publishers()), tags);
+                    GameDataMappers.PublishersToString(gameWithFullDetails.publishers()), tags, rating);
             return gameFound;
         }).collect(Collectors.toList());
     }

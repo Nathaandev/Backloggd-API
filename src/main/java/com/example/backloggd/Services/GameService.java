@@ -5,8 +5,7 @@ import java.util.Iterator;import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.example.backloggd.DTO.GameResponseDTO;
-import com.example.backloggd.DTO.GameSummaryDTO;
+import com.example.backloggd.DTO.*;
 import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.ReviewRepository;
 import org.springframework.data.domain.PageImpl;
@@ -15,8 +14,6 @@ import com.example.backloggd.DTO.ObjectsDTO.DevelopersDTO;
 import com.example.backloggd.DTO.ObjectsDTO.GenreDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsWrapperDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
-import com.example.backloggd.DTO.RawgGameDTO;
-import com.example.backloggd.DTO.RawgResponseDTO;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Repository.GameRepository;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.example.backloggd.Util.GameDataMappers;
+
+import static java.util.Arrays.stream;
 
 @Service
 public class GameService {
@@ -42,6 +41,14 @@ public class GameService {
         this.reviewRepository = reviewRepository;
         this.mapper = mapper;
     }
+    public double calculateGameRating(String gameName){
+        List<ReviewModel> reviews = reviewRepository.findByGameGameName(gameName);
+        double ratings = reviews.stream()
+                .mapToDouble(ReviewModel::getRating)
+                .average()
+                .orElse(0.0);
+        return ratings;
+}
     public ResponseEntity<String> checkIfGameIsInDatabase(String gameName){
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         if(gamesModelOptional.isEmpty()) {
@@ -71,21 +78,15 @@ public class GameService {
         checkIfGameIsInDatabase(gameName);
         var game = gamesModelOptional.get();
         List<ReviewModel> reviews = reviewRepository.findByGameGameName(gameName);
-        GameResponseDTO gameResponseDTO = new GameResponseDTO(game.getGameName(), game.getGameDescription(), game.getReleaseDate(), game.getPublishers(), game.getMetacritic(), game.getDevelopers(), game.getGenres(), game.getPlatforms(), reviews);
+        double rating = calculateGameRating(gameName);
+        GameResponseDTO gameResponseDTO = new GameResponseDTO(game.getGameName(), game.getGameDescription(), game.getReleaseDate(), game.getPublishers(), game.getMetacritic(), game.getDevelopers(), game.getGenres(), game.getPlatforms(), rating, reviews);
         return ResponseEntity.ok(gameResponseDTO);
     }
     public Page<GameSummaryDTO> searchGameByGenre(String genres, Pageable pageable){
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByGenre(genres, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
-
-        //Check if the game is in the database, if it isn't, saves it.
-        for (GameSummaryDTO gameSummaryDTO : gamesFound){
-            Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
-            if (gameOptional.isEmpty()){
-                GamesModel game = new GamesModel();
-                BeanUtils.copyProperties(gameSummaryDTO, game);
-                gameRepository.save(game);
-            }
+        for (GameSummaryDTO games : gamesFound){
+            checkIfGameIsInDatabase(games.gameName());
         }
 
         return new PageImpl<>(

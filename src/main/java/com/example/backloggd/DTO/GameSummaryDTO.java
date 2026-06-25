@@ -23,6 +23,8 @@ public record GameSummaryDTO(
 
         String publishers,
 
-        String tags
+        String tags,
+
+        double rating
 ) {
 }
