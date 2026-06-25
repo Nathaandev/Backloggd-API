@@ -74,14 +74,15 @@ public class GameService {
     }
 
     public ResponseEntity<GameResponseDTO> searchGame(String gameName) {
-        var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         checkIfGameIsInDatabase(gameName);
+        var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         var game = gamesModelOptional.get();
         List<ReviewModel> reviews = reviewRepository.findByGameGameName(gameName);
         double rating = calculateGameRating(gameName);
         GameResponseDTO gameResponseDTO = new GameResponseDTO(game.getGameName(), game.getGameDescription(), game.getReleaseDate(), game.getPublishers(), game.getMetacritic(), game.getDevelopers(), game.getGenres(), game.getPlatforms(), rating, reviews);
         return ResponseEntity.ok(gameResponseDTO);
     }
+
     public Page<GameSummaryDTO> searchGameByGenre(String genres, Pageable pageable){
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByGenre(genres, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
@@ -118,13 +119,8 @@ public class GameService {
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByPublishers(publisher, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
 
-        for (GameSummaryDTO gameSummaryDTO : gamesFound){
-            Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
-            if (gameOptional.isEmpty()){
-                GamesModel game = new GamesModel();
-                BeanUtils.copyProperties(gameSummaryDTO, game);
-                gameRepository.save(game);
-            }
+        for (GameSummaryDTO games : gamesFound){
+            checkIfGameIsInDatabase(games.gameName());
         }
 
         return new PageImpl<>(
@@ -140,14 +136,8 @@ public class GameService {
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByMetacritic(ordering, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
         gamesFound.removeIf(game -> game.metacritic() == null);
-        for (GameSummaryDTO gameSummaryDTO : gamesFound){
-            Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
-            if (gameOptional.isEmpty()){
-                GamesModel game = new GamesModel();
-                BeanUtils.copyProperties(gameSummaryDTO, game);
-                gameRepository.save(game);
-            }
-
+        for (GameSummaryDTO games : gamesFound){
+            checkIfGameIsInDatabase(games.gameName());
         }
         return new PageImpl<>(
                 gamesFound,
@@ -158,13 +148,8 @@ public class GameService {
     public Page<GameSummaryDTO> searchGamesByTags(String tags, Pageable pageable){
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByTags(tags, pageable);
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
-        for (GameSummaryDTO gameSummaryDTO : gamesFound){
-            Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
-            if (gameOptional.isEmpty()){
-                GamesModel game = new GamesModel();
-                BeanUtils.copyProperties(gameSummaryDTO, game);
-                gameRepository.save(game);
-            }
+        for (GameSummaryDTO games : gamesFound){
+            checkIfGameIsInDatabase(games.gameName());
         }
         return new PageImpl<>(
                 gamesFound,
