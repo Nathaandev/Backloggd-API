@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends JpaRepository<ReviewModel, Long> {
     List<ReviewModel> findByGameGameName(String gameName);
+
+    ReviewModel findByGameGameNameAndUserModelUserName(String gameName, String userName);
 }

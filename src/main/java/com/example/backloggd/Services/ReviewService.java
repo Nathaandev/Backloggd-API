@@ -2,6 +2,7 @@ package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.GameReviewDTO;
 import com.example.backloggd.DTO.ReviewResponseDTO;
+import com.example.backloggd.Exceptions.AlreadyPublishedAReviewException;
 import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Repository.ReviewRepository;
@@ -36,6 +37,10 @@ public class ReviewService {
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         var game = gamesModelOptional.orElseThrow(() -> new IllegalArgumentException("Game not found."));
         var user = userRepository.findByUserName(authentication.getName());
+        if (reviewRepository.findByGameGameNameAndUserModelUserName(gameName, authentication.getName()) != null) {
+            logger.error("User {} has already published a review for {}.", authentication.getName(), gameName);
+            throw new AlreadyPublishedAReviewException("You have already published a review for this game.");
+        }
         ReviewModel reviewModel = new ReviewModel();
         BeanUtils.copyProperties(gameReviewDTO, reviewModel);
         reviewModel.setGame(game);

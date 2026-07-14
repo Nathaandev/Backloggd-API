@@ -16,4 +16,10 @@ public class GlobalExceptionHandler {
         logger.error("Username already in use.");
         return ResponseEntity.status(400).body(e.getMessage());
     }
+
+    @ExceptionHandler(AlreadyPublishedAReviewException.class)
+    public ResponseEntity<String> handleAlreadyPublishedAReview(AlreadyPublishedAReviewException e) {
+        logger.error("Review already published.");
+        return ResponseEntity.status(400).body(e.getMessage());
+    }
 }
