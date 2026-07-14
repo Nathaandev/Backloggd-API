@@ -5,7 +5,8 @@ import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.UserModel;
 import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Repository.UserRepository;
-import org.springframework.http.HttpStatusCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -17,10 +18,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
 
 @Service
 public class UserService implements UserDetailsService {
+
+    Logger logger = LoggerFactory.getLogger(UserService.class);
+
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final GameService gameService;
@@ -35,15 +39,17 @@ public class UserService implements UserDetailsService {
 
     public ResponseEntity<UserModel> signUp(UserRegistrationDTO userRegistrationDTO){
         UserModel userModel = new UserModel(userRegistrationDTO.userName(), passwordEncoder.encode(userRegistrationDTO.password()), userRegistrationDTO.userEmail());
+        logger.info("User {} registered successfully.", userRegistrationDTO.userName());
         return ResponseEntity.ok(userRepository.save(userModel));
     }
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         UserModel user = userRepository.findByUserName(userName);
-    return User.withUsername(user.getUserName())
-            .password(user.getPassword())
-            .roles("USER")
-            .build();
+        logger.info("Loading user details for {}.", userName);
+        return User.withUsername(user.getUserName())
+                .password(user.getPassword())
+                .roles("USER")
+                .build();
     }
 
     public ResponseEntity<String> addGameToWishlist(String gameName, Authentication authentication){
@@ -52,10 +58,15 @@ public class UserService implements UserDetailsService {
         UserModel user = userRepository.findByUserName(authentication.getName());
         user.getWishlist().add(gamesModel.get());
         userRepository.save(user);
+        logger.info("{} was added to  {}'s wishlist.", gameName, authentication.getName());
         return ResponseEntity.ok("Game added to wishlist.");
     }
     public ResponseEntity<List<String>> getUserWishlist(Authentication authentication) {
         UserModel user = userRepository.findByUserName(authentication.getName());
+        if (user == null) {
+            logger.warn("User {} not found when trying to retrieve wishlist.", authentication.getName());
+            return ResponseEntity.notFound().build();
+        }
         List<String> gameNames = new ArrayList<>();
         for (GamesModel game : user.getWishlist()) {
             gameNames.add(game.getGameName());
@@ -68,6 +79,7 @@ public class UserService implements UserDetailsService {
         UserModel user =  userRepository.findByUserName(authentication.getName());
         user.getWishlist().remove(gamesModel.get());
         userRepository.save(user);
+        logger.info("{} was removed from  {}'s wishlist.", gameName, authentication.getName());
         return ResponseEntity.ok("Game deleted.");
     }
 

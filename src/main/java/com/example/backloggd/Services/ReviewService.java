@@ -6,15 +6,19 @@ import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Repository.ReviewRepository;
 import com.example.backloggd.Repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 public class ReviewService {
+
+    Logger logger = LoggerFactory.getLogger(ReviewService.class);
+
     private final GameService gameService;
     private final GameRepository gameRepository;
     private final UserRepository userRepository;
@@ -43,6 +47,7 @@ public class ReviewService {
                 saved.getReview(),
                 saved.getRating(),
                 saved.getGameTime());
+        logger.info("Review published for {} by {}.", gameName, authentication.getName());
 
         return ResponseEntity.ok(reviewResponseDTO);
     }

@@ -2,6 +2,8 @@ package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
@@ -12,6 +14,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class RawgApiService {
+
+    Logger logger = LoggerFactory.getLogger(RawgApiService.class);
 
     @Value("${rawg.api.base-url}")
     private String baseUrl;
@@ -47,7 +51,7 @@ public class RawgApiService {
                                                          .build(rawgId))
                             .retrieve()
                             .onStatus(HttpStatusCode::isError, ClientResponse -> {
-                                System.out.println("RAWG API returned a HTTP error. " + ClientResponse.statusCode());
+                                logger.error("RAWG API returned a HTTP error. {}", ClientResponse.statusCode());
                                 return Mono.empty();
                             })
                             .bodyToMono(RawgGameDTO.class)
@@ -55,7 +59,7 @@ public class RawgApiService {
 
         } catch (
                 WebClientRequestException e) {
-            System.out.println(e.getMessage());
+            logger.error("Error occurred while fetching game details for ID {}: {}", rawgId, e.getMessage());
             return null;
         }
     }

@@ -13,6 +13,8 @@ import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Repository.ReviewRepository;
 import com.example.backloggd.Util.GameDataMappers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,8 +27,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+
 @Service
 public class GameService {
+
+    Logger logger = LoggerFactory.getLogger(GameService.class);
+
     @Autowired
     GameRepository gameRepository;
     private final RawgApiService rawgApiService;
@@ -50,10 +56,12 @@ public class GameService {
     }
 
     public ResponseEntity<String> checkIfGameIsInDatabase(String gameName) {
+        logger.info("Checking if {} is in database...", gameName);
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         if (gamesModelOptional.isEmpty()) {
             RawgResponseDTO rawgResponse = rawgApiService.getGames(gameName);
             if (rawgResponse == null) {
+                logger.warn("{} was not found in RAWG API.", gameName);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
             var bestMatch = rawgResponse.results().get(0);
@@ -67,8 +75,10 @@ public class GameService {
 
             GameDataMappers.ConsolidateGameData(gameFound, gameWithFullDetails, developers, genres, platforms, publishers);
             gameRepository.save(gameFound);
+            logger.info("{} was added to database.", gameName);
             return ResponseEntity.ok("Game added to database.");
         } else {
+            logger.info("{} was found in database.", gameName);
             return ResponseEntity.ok("Game found in database.");
         }
     }
