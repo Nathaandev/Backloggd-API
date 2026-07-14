@@ -2,10 +2,8 @@ package com.example.backloggd.Controller;
 
 import com.example.backloggd.DTO.GameResponseDTO;
 import com.example.backloggd.DTO.GameSummaryDTO;
-import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Services.GameService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/games")
 public class GameController {
 
-    @Autowired
     GameService gameService;
 
     @GetMapping("/search/{gameName}")
