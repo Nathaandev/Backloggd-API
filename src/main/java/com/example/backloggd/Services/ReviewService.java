@@ -34,7 +34,7 @@ public class ReviewService {
     public ResponseEntity<ReviewResponseDTO> publishReviews(String gameName, Authentication authentication, GameReviewDTO gameReviewDTO){
         gameService.checkIfGameIsInDatabase(gameName);
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
-        var game = gamesModelOptional.get();
+        var game = gamesModelOptional.orElseThrow(() -> new IllegalArgumentException("Game not found."));
         var user = userRepository.findByUserName(authentication.getName());
         ReviewModel reviewModel = new ReviewModel();
         BeanUtils.copyProperties(gameReviewDTO, reviewModel);

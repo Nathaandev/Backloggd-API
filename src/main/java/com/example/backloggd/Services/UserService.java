@@ -77,7 +77,7 @@ public class UserService implements UserDetailsService {
     public ResponseEntity<String> removeGameFromWishlist(String gameName, Authentication authentication){
         var gamesModel = gameRepository.findBygameNameIgnoreCase(gameName);
         UserModel user =  userRepository.findByUserName(authentication.getName());
-        user.getWishlist().remove(gamesModel.get());
+        user.getWishlist().remove(gamesModel.orElseThrow(() -> new IllegalArgumentException("Game not found.")));
         userRepository.save(user);
         logger.info("{} was removed from  {}'s wishlist.", gameName, authentication.getName());
         return ResponseEntity.ok("Game deleted.");

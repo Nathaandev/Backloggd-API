@@ -86,7 +86,7 @@ public class GameService {
     public ResponseEntity<GameResponseDTO> searchGame(String gameName) {
         checkIfGameIsInDatabase(gameName);
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
-        var game = gamesModelOptional.get();
+        var game = gamesModelOptional.orElseThrow(() -> new IllegalArgumentException("Game not found."));
         List<ReviewModel> reviews = reviewRepository.findByGameGameName(gameName);
         double rating = calculateGameRating(gameName);
         GameResponseDTO gameResponseDTO = new GameResponseDTO(game.getGameName(), game.getGameDescription(), game.getReleaseDate(), game.getPublishers(), game.getMetacritic(), game.getDevelopers(), game.getGenres(), game.getPlatforms(), rating, reviews);
