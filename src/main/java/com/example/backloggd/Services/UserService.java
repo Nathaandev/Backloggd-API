@@ -1,6 +1,7 @@
 package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.UserRegistrationDTO;
+import com.example.backloggd.Exceptions.UsernameAlreadyInUseException;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.UserModel;
 import com.example.backloggd.Repository.GameRepository;
@@ -38,7 +39,11 @@ public class UserService implements UserDetailsService {
     }
 
     public ResponseEntity<UserModel> signUp(UserRegistrationDTO userRegistrationDTO){
-        UserModel userModel = new UserModel(userRegistrationDTO.userName(), passwordEncoder.encode(userRegistrationDTO.password()), userRegistrationDTO.userEmail());
+        UserModel userModel = new UserModel(userRegistrationDTO.userName(), passwordEncoder.encode(userRegistrationDTO.password()));
+        if (userRepository.findByUserName(userRegistrationDTO.userName()) != null) {
+            logger.error("Username {} is already in use.", userRegistrationDTO.userName());
+            throw new UsernameAlreadyInUseException("Username is already in use.");
+        }
         logger.info("User {} registered successfully.", userRegistrationDTO.userName());
         return ResponseEntity.ok(userRepository.save(userModel));
     }

@@ -20,8 +20,6 @@ public class UserModel {
 
     private String password;
 
-    private String userEmail;
-
     public UserModel(UserRegistrationDTO userRegistrationDTO) {
     }
 
@@ -52,14 +50,6 @@ public class UserModel {
         this.password = password;
     }
 
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
-    }
-
     public List<GamesModel> getWishlist() {
         return wishlist;
     }
@@ -68,10 +58,9 @@ public class UserModel {
         this.wishlist = wishlist;
     }
 
-    public UserModel(String userName, String password, String userEmail) {
+    public UserModel(String userName, String password) {
         this.userName = userName;
         this.password = password;
-        this.userEmail = userEmail;
     }
 
     public UserModel() {

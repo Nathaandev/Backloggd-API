@@ -2,9 +2,6 @@ package com.example.backloggd.Models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import org.springframework.security.core.Authentication;
-
-import java.util.Optional;
 
 @Entity
 @Table(name = "reviews")
