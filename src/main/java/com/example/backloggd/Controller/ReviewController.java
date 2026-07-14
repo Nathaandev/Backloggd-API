@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 @RestController
 public class ReviewController {
     private final ReviewService reviewService;
@@ -19,7 +21,7 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews/{gameName}")
-    public ResponseEntity<ReviewResponseDTO> publishReview(@RequestBody GameReviewDTO gameReviewDTO, @PathVariable String gameName, Authentication authentication){
+    public ResponseEntity<ReviewResponseDTO> publishReview(@Valid @RequestBody GameReviewDTO gameReviewDTO, @PathVariable String gameName, Authentication authentication){
        return reviewService.publishReviews(gameName, authentication, gameReviewDTO);
     }
 }

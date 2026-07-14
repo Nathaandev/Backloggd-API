@@ -3,6 +3,7 @@ package com.example.backloggd.Controller;
 import com.example.backloggd.DTO.UserRegistrationDTO;
 import com.example.backloggd.Models.UserModel;
 import com.example.backloggd.Services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +19,11 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserModel> signup(@RequestBody UserRegistrationDTO userRegistrationDTO){
+    public ResponseEntity<UserModel> signup(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO){
         return userService.signUp(userRegistrationDTO);
     }
     @PostMapping("/wishlist/{gameName}")
-    public ResponseEntity<String> addToWishlist(@PathVariable String gameName, Authentication authentication){
+    public ResponseEntity<String> addToWishlist(@Valid @PathVariable String gameName, Authentication authentication){
        return userService.addGameToWishlist(gameName, authentication);
     }
     @GetMapping("/userwishlist")
@@ -30,7 +31,7 @@ public class UserController {
         return userService.getUserWishlist(authentication);
     }
     @DeleteMapping("/removefromwishlist/{gameName}")
-    public ResponseEntity<String> removeGameFromWishlist(@PathVariable String gameName, Authentication authentication){
+    public ResponseEntity<String> removeGameFromWishlist(@Valid @PathVariable String gameName, Authentication authentication){
         return userService.removeGameFromWishlist(gameName, authentication);
     }
 }
