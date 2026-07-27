@@ -13,6 +13,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 @Service
 public class RawgApiService {
 
@@ -36,11 +40,18 @@ public class RawgApiService {
     }
     public RawgResponseDTO getGames(String gameName){
         validateQueryText(gameName, "Game name");
-        return executeRequest(webClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/games")
-                       .queryParam("search", gameName)
-                       .queryParam("key", apiKey)
-                       .build()), RawgResponseDTO.class, "Fetching games for " + gameName);
+        RawgResponseDTO response = null;
+        for (String searchTerm : buildSearchTerms(gameName)) {
+            response = executeRequest(webClient.get()
+                    .uri(uriBuilder -> uriBuilder.path("/games")
+                           .queryParam("search", searchTerm)
+                           .queryParam("key", apiKey)
+                           .build()), RawgResponseDTO.class, "Fetching games for " + searchTerm);
+            if (response != null && response.results() != null && !response.results().isEmpty()) {
+                return response;
+            }
+        }
+        return response;
     }
     public RawgGameDTO GetGameDetailsWithID(Integer rawgId){
         if (rawgId == null) {
@@ -140,5 +151,39 @@ public class RawgApiService {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(fieldName + " is required.");
         }
+    }
+
+    private List<String> buildSearchTerms(String gameName) {
+        String normalized = gameName.trim();
+        String lowerCase = normalized.toLowerCase(Locale.ROOT);
+        String titleCase = toTitleCase(normalized);
+
+        List<String> searchTerms = new ArrayList<>();
+        searchTerms.add(normalized);
+        if (!lowerCase.equals(normalized)) {
+            searchTerms.add(lowerCase);
+        }
+        if (!titleCase.equals(normalized) && !titleCase.equals(lowerCase)) {
+            searchTerms.add(titleCase);
+        }
+        return searchTerms;
+    }
+
+    private String toTitleCase(String value) {
+        String[] parts = value.toLowerCase(Locale.ROOT).split("\\s+");
+        StringBuilder builder = new StringBuilder();
+        for (String part : parts) {
+            if (part.isBlank()) {
+                continue;
+            }
+            if (builder.length() > 0) {
+                builder.append(' ');
+            }
+            builder.append(Character.toUpperCase(part.charAt(0)));
+            if (part.length() > 1) {
+                builder.append(part.substring(1));
+            }
+        }
+        return builder.toString();
     }
 }
