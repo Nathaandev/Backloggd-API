@@ -50,7 +50,7 @@ public class ReviewService {
         if (user == null) {
             throw new UsernameNotFoundException("User not found.");
         }
-        if (reviewRepository.findByGameGameNameAndUserModelUserName(gameName, authentication.getName()) != null) {
+        if (reviewRepository.findByGameGameNameAndUserModelUserName(gameName, authentication.getName()).isPresent()) {
             logger.error("User {} has already published a review for {}.", authentication.getName(), gameName);
             throw new AlreadyPublishedAReviewException("You have already published a review for this game.");
         }
