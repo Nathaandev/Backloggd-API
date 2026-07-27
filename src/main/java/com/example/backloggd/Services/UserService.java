@@ -84,7 +84,7 @@ public class UserService implements UserDetailsService {
         var game = gamesModel.orElseThrow(() -> new IllegalArgumentException("Game not found."));
         UserModel user = userRepository.findByUserName(authentication.getName());
         if (user == null) {
-            throw new IllegalArgumentException("User not found.");
+            throw new UsernameNotFoundException("User not found.");
         }
         if (user.getWishlist() == null) {
             user.setWishlist(new ArrayList<>());
@@ -100,8 +100,7 @@ public class UserService implements UserDetailsService {
         }
         UserModel user = userRepository.findByUserName(authentication.getName());
         if (user == null) {
-            logger.warn("User {} not found when trying to retrieve wishlist.", authentication.getName());
-            return ResponseEntity.notFound().build();
+            throw new UsernameNotFoundException("User not found.");
         }
         if (user.getWishlist() == null) {
             return ResponseEntity.ok(List.of());
@@ -123,7 +122,7 @@ public class UserService implements UserDetailsService {
         var gamesModel = gameRepository.findBygameNameIgnoreCase(gameName);
         UserModel user =  userRepository.findByUserName(authentication.getName());
         if (user == null) {
-            throw new IllegalArgumentException("User not found.");
+            throw new UsernameNotFoundException("User not found.");
         }
         if (user.getWishlist() == null) {
             user.setWishlist(new ArrayList<>());

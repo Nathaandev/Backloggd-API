@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 
@@ -47,7 +48,7 @@ public class ReviewService {
         var game = gamesModelOptional.orElseThrow(() -> new IllegalArgumentException("Game not found."));
         var user = userRepository.findByUserName(authentication.getName());
         if (user == null) {
-            throw new IllegalArgumentException("User not found.");
+            throw new UsernameNotFoundException("User not found.");
         }
         if (reviewRepository.findByGameGameNameAndUserModelUserName(gameName, authentication.getName()) != null) {
             logger.error("User {} has already published a review for {}.", authentication.getName(), gameName);
