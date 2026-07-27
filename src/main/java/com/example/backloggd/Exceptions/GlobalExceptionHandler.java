@@ -22,4 +22,16 @@ public class GlobalExceptionHandler {
         logger.error("Review already published.");
         return ResponseEntity.status(400).body(e.getMessage());
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        logger.warn("Invalid request: {}", e.getMessage());
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenericException(Exception e) {
+        logger.error("Unhandled exception", e);
+        return ResponseEntity.status(500).body("Internal server error.");
+    }
 }
