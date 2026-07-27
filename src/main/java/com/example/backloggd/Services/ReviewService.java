@@ -33,10 +33,22 @@ public class ReviewService {
     }
 
     public ResponseEntity<ReviewResponseDTO> publishReviews(String gameName, Authentication authentication, GameReviewDTO gameReviewDTO){
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new IllegalArgumentException("Authentication is required.");
+        }
+        if (gameName == null || gameName.isBlank()) {
+            throw new IllegalArgumentException("Game name is required.");
+        }
+        if (gameReviewDTO == null) {
+            throw new IllegalArgumentException("Review data is required.");
+        }
         gameService.checkIfGameIsInDatabase(gameName);
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         var game = gamesModelOptional.orElseThrow(() -> new IllegalArgumentException("Game not found."));
         var user = userRepository.findByUserName(authentication.getName());
+        if (user == null) {
+            throw new IllegalArgumentException("User not found.");
+        }
         if (reviewRepository.findByGameGameNameAndUserModelUserName(gameName, authentication.getName()) != null) {
             logger.error("User {} has already published a review for {}.", authentication.getName(), gameName);
             throw new AlreadyPublishedAReviewException("You have already published a review for this game.");

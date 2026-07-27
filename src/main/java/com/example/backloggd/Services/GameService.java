@@ -47,7 +47,9 @@ public class GameService {
     }
 
     public double calculateGameRating(String gameName) {
-        List<ReviewModel> reviews = reviewRepository.findByGameGameName(gameName);
+        validateGameName(gameName);
+        List<ReviewModel> reviews = Optional.ofNullable(reviewRepository.findByGameGameName(gameName))
+                .orElse(List.of());
         double ratings = reviews.stream()
                 .mapToDouble(ReviewModel::getRating)
                 .average()
@@ -56,22 +58,29 @@ public class GameService {
     }
 
     public ResponseEntity<String> checkIfGameIsInDatabase(String gameName) {
+        validateGameName(gameName);
         logger.info("Checking if {} is in database...", gameName);
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         if (gamesModelOptional.isEmpty()) {
             RawgResponseDTO rawgResponse = rawgApiService.getGames(gameName);
-            if (rawgResponse == null) {
+            if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
                 logger.warn("{} was not found in RAWG API.", gameName);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game was not found.");
             }
             var bestMatch = rawgResponse.results().get(0);
-            List<GenreDTO> genres = bestMatch.genres();
-            List<PlatformsWrapperDTO> platforms = bestMatch.platforms();
+            if (bestMatch.rawgId() == null) {
+                throw new IllegalStateException("RAWG API returned a game without an identifier.");
+            }
+            List<GenreDTO> genres = safeList(bestMatch.genres());
+            List<PlatformsWrapperDTO> platforms = safeList(bestMatch.platforms());
             com.example.backloggd.Models.GamesModel gameFound = new com.example.backloggd.Models.GamesModel();
             BeanUtils.copyProperties(bestMatch, gameFound);
             RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(gameFound.getRawgId());
-            List<DevelopersDTO> developers = gameWithFullDetails.developers();
-            List<PublishersDTO> publishers = gameWithFullDetails.publishers();
+            if (gameWithFullDetails == null) {
+                throw new IllegalStateException("RAWG API did not return full details for game id " + gameFound.getRawgId() + ".");
+            }
+            List<DevelopersDTO> developers = safeList(gameWithFullDetails.developers());
+            List<PublishersDTO> publishers = safeList(gameWithFullDetails.publishers());
 
             GameDataMappers.ConsolidateGameData(gameFound, gameWithFullDetails, developers, genres, platforms, publishers);
             gameRepository.save(gameFound);
@@ -84,17 +93,23 @@ public class GameService {
     }
 
     public ResponseEntity<GameResponseDTO> searchGame(String gameName) {
+        validateGameName(gameName);
         checkIfGameIsInDatabase(gameName);
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         var game = gamesModelOptional.orElseThrow(() -> new IllegalArgumentException("Game not found."));
-        List<ReviewModel> reviews = reviewRepository.findByGameGameName(gameName);
+        List<ReviewModel> reviews = Optional.ofNullable(reviewRepository.findByGameGameName(gameName))
+                .orElse(List.of());
         double rating = calculateGameRating(gameName);
         GameResponseDTO gameResponseDTO = new GameResponseDTO(game.getGameName(), game.getGameDescription(), game.getReleaseDate(), game.getPublishers(), game.getMetacritic(), game.getDevelopers(), game.getGenres(), game.getPlatforms(), rating, reviews);
         return ResponseEntity.ok(gameResponseDTO);
     }
 
     public Page<GameSummaryDTO> searchGameByGenre(String genres, Pageable pageable) {
+        validateGameName(genres);
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByGenre(genres, pageable);
+        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
         for (GameSummaryDTO games : gamesFound) {
             checkIfGameIsInDatabase(games.gameName());
@@ -103,12 +118,16 @@ public class GameService {
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count()
+                rawgResponse.count() == null ? 0 : rawgResponse.count()
         );
     }
 
     public Page<GameSummaryDTO> searchGameByDeveloper(String developer, Pageable pageable) {
+        validateGameName(developer);
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByDeveloper(developer, pageable);
+        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
 
         for (GameSummaryDTO gameSummaryDTO : gamesFound) {
@@ -122,12 +141,16 @@ public class GameService {
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count()
+                rawgResponse.count() == null ? 0 : rawgResponse.count()
         );
     }
 
     public Page<GameSummaryDTO> searchGamesByPublishers(String publisher, Pageable pageable) {
+        validateGameName(publisher);
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByPublishers(publisher, pageable);
+        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
 
         for (GameSummaryDTO games : gamesFound) {
@@ -137,14 +160,18 @@ public class GameService {
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count()
+                rawgResponse.count() == null ? 0 : rawgResponse.count()
         );
 
 
     }
 
     public Page<GameSummaryDTO> searchGamesByMetacritic(String ordering, Pageable pageable) {
+        validateGameName(ordering);
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByMetacritic(ordering, pageable);
+        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
         gamesFound.removeIf(game -> game.metacritic() == null);
         for (GameSummaryDTO games : gamesFound) {
@@ -153,12 +180,16 @@ public class GameService {
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count()
+                rawgResponse.count() == null ? 0 : rawgResponse.count()
         );
     }
 
     public Page<GameSummaryDTO> searchGamesByTags(String tags, Pageable pageable) {
+        validateGameName(tags);
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByTags(tags, pageable);
+        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
         List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
         for (GameSummaryDTO games : gamesFound) {
             checkIfGameIsInDatabase(games.gameName());
@@ -166,7 +197,17 @@ public class GameService {
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count()
+                rawgResponse.count() == null ? 0 : rawgResponse.count()
         );
+    }
+
+    private void validateGameName(String gameName) {
+        if (gameName == null || gameName.isBlank()) {
+            throw new IllegalArgumentException("Game name is required.");
+        }
+    }
+
+    private <T> List<T> safeList(List<T> values) {
+        return values == null ? List.of() : values;
     }
 }
