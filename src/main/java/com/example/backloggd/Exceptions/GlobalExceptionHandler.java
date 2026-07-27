@@ -36,6 +36,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(404).body(e.getMessage());
     }
 
+    @ExceptionHandler(RawgApiException.class)
+    public ResponseEntity<String> handleRawgApiException(RawgApiException e) {
+        logger.error("RAWG API error: {}", e.getMessage());
+        return ResponseEntity.status(502).body(e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception e) {
         logger.error("Unhandled exception", e);

@@ -2,6 +2,7 @@ package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
+import com.example.backloggd.Exceptions.RawgApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -126,12 +127,12 @@ public class RawgApiService {
                                    String message = operation + " failed with status " + response.statusCode()
                                            + (body.isBlank() ? "" : ": " + body);
                                    logger.error(message);
-                                   return Mono.error(new IllegalStateException(message));
+                                   return Mono.error(new RawgApiException(message));
                                }))
                 .bodyToMono(responseType)
-                .switchIfEmpty(Mono.error(new IllegalStateException(operation + " returned an empty response.")))
+                .switchIfEmpty(Mono.error(new RawgApiException(operation + " returned an empty response.")))
                 .onErrorMap(WebClientRequestException.class,
-                       e -> new IllegalStateException(operation + " could not reach RAWG.", e))
+                       e -> new RawgApiException(operation + " could not reach RAWG.", e))
                 .block();
     }
 

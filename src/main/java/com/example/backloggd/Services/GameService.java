@@ -8,6 +8,7 @@ import com.example.backloggd.DTO.ObjectsDTO.PlatformsWrapperDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
+import com.example.backloggd.Exceptions.RawgApiException;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.GameRepository;
@@ -69,7 +70,7 @@ public class GameService {
             }
             var bestMatch = rawgResponse.results().get(0);
             if (bestMatch.rawgId() == null) {
-                throw new IllegalStateException("RAWG API returned a game without an identifier.");
+                throw new RawgApiException("RAWG API returned a game without an identifier.");
             }
             List<GenreDTO> genres = safeList(bestMatch.genres());
             List<PlatformsWrapperDTO> platforms = safeList(bestMatch.platforms());
@@ -77,7 +78,7 @@ public class GameService {
             BeanUtils.copyProperties(bestMatch, gameFound);
             RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(gameFound.getRawgId());
             if (gameWithFullDetails == null) {
-                throw new IllegalStateException("RAWG API did not return full details for game id " + gameFound.getRawgId() + ".");
+                throw new RawgApiException("RAWG API did not return full details for game id " + gameFound.getRawgId() + ".");
             }
             List<DevelopersDTO> developers = safeList(gameWithFullDetails.developers());
             List<PublishersDTO> publishers = safeList(gameWithFullDetails.publishers());

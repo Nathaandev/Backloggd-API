@@ -11,6 +11,7 @@ import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
 import com.example.backloggd.DTO.ObjectsDTO.TagsDTO;
 import com.example.backloggd.DTO.RawgGameDTO;
 import com.example.backloggd.DTO.RawgResponseDTO;
+import com.example.backloggd.Exceptions.RawgApiException;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.ReviewRepository;
@@ -94,7 +95,7 @@ public class GameDataMappers {
 
                     RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(game.rawgId());
                     if (gameWithFullDetails == null) {
-                        throw new IllegalStateException("RAWG API did not return details for game id " + game.rawgId() + ".");
+                        throw new RawgApiException("RAWG API did not return details for game id " + game.rawgId() + ".");
                     }
                     String rawDescription = gameWithFullDetails.gameDescription();
                     String genre = GameDataMappers.GenresToString(game.genres());
