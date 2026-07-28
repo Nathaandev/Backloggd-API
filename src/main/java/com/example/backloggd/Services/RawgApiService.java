@@ -67,7 +67,7 @@ public class RawgApiService {
         int rawgPageNumber = resolveRawgPageNumber(pageable);
 
         RawgResponseDTO response = null;
-        for (String searchTerm : buildSearchTerms(genres)) {
+        for (String searchTerm : buildGenreSearchTerms(genres)) {
             response = executeRequest(webClient.get()
                            .uri(uriBuilder -> uriBuilder.path("/games")
                                                             .queryParam("genres", searchTerm)
@@ -199,6 +199,24 @@ public class RawgApiService {
             searchTerms.add(titleCase);
         }
         return searchTerms;
+    }
+
+    private List<String> buildGenreSearchTerms(String genres) {
+        List<String> searchTerms = new ArrayList<>(buildSearchTerms(genres));
+        String normalized = genres.trim().toLowerCase(Locale.ROOT);
+        if (normalized.equals("rpg")
+                || normalized.equals("role-playing")
+                || normalized.equals("role playing")
+                || normalized.equals("role-playing-games-rpg")) {
+            addSearchTerm(searchTerms, "role-playing-games-rpg");
+        }
+        return searchTerms;
+    }
+
+    private void addSearchTerm(List<String> searchTerms, String searchTerm) {
+        if (searchTerm != null && !searchTerm.isBlank() && !searchTerms.contains(searchTerm)) {
+            searchTerms.add(searchTerm);
+        }
     }
 
     private String toTitleCase(String value) {
