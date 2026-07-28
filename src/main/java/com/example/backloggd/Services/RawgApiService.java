@@ -129,13 +129,21 @@ public class RawgApiService {
         validateQueryText(ordering, "Ordering");
         int rawgPageNumber = resolveRawgPageNumber(pageable);
 
-        return executeRequest(webClient.get()
-                       .uri(uriBuilder -> uriBuilder.path("/games")
-                                .queryParam("ordering", ordering )
-                                .queryParam("key", apiKey)
-                                .queryParam("page_size", "20")
-                                .queryParam("page", rawgPageNumber)
-                                .build()), RawgResponseDTO.class, "Fetching games by metacritic ordering " + ordering);
+        String normalizedOrdering = ordering.trim();
+        RawgResponseDTO response = null;
+        for (String searchTerm : buildSearchTerms(normalizedOrdering)) {
+            response = executeRequest(webClient.get()
+                           .uri(uriBuilder -> uriBuilder.path("/games")
+                                    .queryParam("ordering", searchTerm)
+                                    .queryParam("key", apiKey)
+                                    .queryParam("page_size", "20")
+                                    .queryParam("page", rawgPageNumber)
+                                    .build()), RawgResponseDTO.class, "Fetching games by metacritic ordering " + searchTerm);
+            if (response != null && response.results() != null && !response.results().isEmpty()) {
+                return response;
+            }
+        }
+        return response;
 
     }
     public RawgResponseDTO getGamesByTags(String tags, Pageable pageable){
