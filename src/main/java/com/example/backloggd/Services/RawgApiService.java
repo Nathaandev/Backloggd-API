@@ -107,8 +107,9 @@ public class RawgApiService {
         validateQueryText(publisher, "Publisher");
         int rawgPageNumber = resolveRawgPageNumber(pageable);
 
+        String normalizedPublisher = publisher.trim();
         RawgResponseDTO response = null;
-        for (String searchTerm : buildSearchTerms(publisher)) {
+        for (String searchTerm : buildSearchTerms(normalizedPublisher)) {
             response = executeRequest(webClient.get()
                            .uri(uriBuilder -> uriBuilder.path("/games")
                                                             .queryParam("publishers", searchTerm)
