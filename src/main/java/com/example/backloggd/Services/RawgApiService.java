@@ -64,7 +64,7 @@ public class RawgApiService {
     }
     public RawgResponseDTO getGamesByGenre(String genres, Pageable pageable){
         validateQueryText(genres, "Genre");
-        int rawgPageNumber = pageable.getPageNumber() + 1;
+        int rawgPageNumber = resolveRawgPageNumber(pageable);
 
         RawgResponseDTO response = null;
         for (String searchTerm : buildSearchTerms(genres)) {
@@ -84,7 +84,7 @@ public class RawgApiService {
     }
     public RawgResponseDTO getGamesByDeveloper(String developer, Pageable pageable){
         validateQueryText(developer, "Developer");
-        int rawgPageNumber = pageable.getPageNumber() + 1;
+        int rawgPageNumber = resolveRawgPageNumber(pageable);
 
         RawgResponseDTO response = null;
         for (String searchTerm : buildSearchTerms(developer)) {
@@ -104,7 +104,7 @@ public class RawgApiService {
     }
     public RawgResponseDTO getGamesByPublishers(String publisher, Pageable pageable){
         validateQueryText(publisher, "Publisher");
-        int rawgPageNumber = pageable.getPageNumber() + 1;
+        int rawgPageNumber = resolveRawgPageNumber(pageable);
 
         RawgResponseDTO response = null;
         for (String searchTerm : buildSearchTerms(publisher)) {
@@ -125,7 +125,7 @@ public class RawgApiService {
     }
     public RawgResponseDTO getGamesByMetacritic(String ordering, Pageable pageable){
         validateQueryText(ordering, "Ordering");
-        int rawgPageNumber = pageable.getPageNumber() + 1;
+        int rawgPageNumber = resolveRawgPageNumber(pageable);
 
         return executeRequest(webClient.get()
                        .uri(uriBuilder -> uriBuilder.path("/games")
@@ -138,7 +138,7 @@ public class RawgApiService {
     }
     public RawgResponseDTO getGamesByTags(String tags, Pageable pageable){
         validateQueryText(tags, "Tags");
-        int rawgPageNumber = pageable.getPageNumber() + 1;
+        int rawgPageNumber = resolveRawgPageNumber(pageable);
 
         RawgResponseDTO response = null;
         for (String searchTerm : buildSearchTerms(tags)) {
@@ -179,6 +179,10 @@ public class RawgApiService {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(fieldName + " is required.");
         }
+    }
+
+    private int resolveRawgPageNumber(Pageable pageable) {
+        return Math.max(1, pageable.getPageNumber());
     }
 
     private List<String> buildSearchTerms(String gameName) {
