@@ -86,27 +86,41 @@ public class RawgApiService {
         validateQueryText(developer, "Developer");
         int rawgPageNumber = pageable.getPageNumber() + 1;
 
-        return executeRequest(webClient.get()
-                       .uri(uriBuilder -> uriBuilder.path("/games")
-                                                    .queryParam("developers", developer)
-                                                    .queryParam("key", apiKey)
-                                                    //Set the page size to 20
-                                                    .queryParam("page_size", "20")
-                                                    .queryParam("page", rawgPageNumber)
-                                                    .build()), RawgResponseDTO.class, "Fetching games by developer " + developer);
+        RawgResponseDTO response = null;
+        for (String searchTerm : buildSearchTerms(developer)) {
+            response = executeRequest(webClient.get()
+                           .uri(uriBuilder -> uriBuilder.path("/games")
+                                                            .queryParam("developers", searchTerm)
+                                                            .queryParam("key", apiKey)
+                                                            //Set the page size to 20
+                                                            .queryParam("page_size", "20")
+                                                            .queryParam("page", rawgPageNumber)
+                                                            .build()), RawgResponseDTO.class, "Fetching games by developer " + searchTerm);
+            if (response != null && response.results() != null && !response.results().isEmpty()) {
+                return response;
+            }
+        }
+        return response;
     }
     public RawgResponseDTO getGamesByPublishers(String publisher, Pageable pageable){
         validateQueryText(publisher, "Publisher");
         int rawgPageNumber = pageable.getPageNumber() + 1;
 
-        return executeRequest(webClient.get()
-                       .uri(uriBuilder -> uriBuilder.path("/games")
-                                                    .queryParam("publishers", publisher)
-                                                    .queryParam("key", apiKey)
-                                                    //Set the page size to 20
-                                                    .queryParam("page_size", "20")
-                                                    .queryParam("page", rawgPageNumber)
-                                                    .build()), RawgResponseDTO.class, "Fetching games by publisher " + publisher);
+        RawgResponseDTO response = null;
+        for (String searchTerm : buildSearchTerms(publisher)) {
+            response = executeRequest(webClient.get()
+                           .uri(uriBuilder -> uriBuilder.path("/games")
+                                                            .queryParam("publishers", searchTerm)
+                                                            .queryParam("key", apiKey)
+                                                            //Set the page size to 20
+                                                            .queryParam("page_size", "20")
+                                                            .queryParam("page", rawgPageNumber)
+                                                            .build()), RawgResponseDTO.class, "Fetching games by publisher " + searchTerm);
+            if (response != null && response.results() != null && !response.results().isEmpty()) {
+                return response;
+            }
+        }
+        return response;
 
     }
     public RawgResponseDTO getGamesByMetacritic(String ordering, Pageable pageable){
@@ -126,13 +140,20 @@ public class RawgApiService {
         validateQueryText(tags, "Tags");
         int rawgPageNumber = pageable.getPageNumber() + 1;
 
-        return executeRequest(webClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/games")
-                       .queryParam("tags", tags)
-                                            .queryParam("key", apiKey)
-                                            .queryParam("page_size", "20")
-                        .queryParam("page", rawgPageNumber)
-                        .build()), RawgResponseDTO.class, "Fetching games by tags " + tags);
+        RawgResponseDTO response = null;
+        for (String searchTerm : buildSearchTerms(tags)) {
+            response = executeRequest(webClient.get()
+                    .uri(uriBuilder -> uriBuilder.path("/games")
+                           .queryParam("tags", searchTerm)
+                                                .queryParam("key", apiKey)
+                                                .queryParam("page_size", "20")
+                           .queryParam("page", rawgPageNumber)
+                           .build()), RawgResponseDTO.class, "Fetching games by tags " + searchTerm);
+            if (response != null && response.results() != null && !response.results().isEmpty()) {
+                return response;
+            }
+        }
+        return response;
 
     }
 
