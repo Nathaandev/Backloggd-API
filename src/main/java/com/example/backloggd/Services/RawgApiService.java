@@ -66,14 +66,21 @@ public class RawgApiService {
         validateQueryText(genres, "Genre");
         int rawgPageNumber = pageable.getPageNumber() + 1;
 
-        return executeRequest(webClient.get()
-                       .uri(uriBuilder -> uriBuilder.path("/games")
-                                                    .queryParam("genres", genres)
-                                                    .queryParam("key", apiKey)
-                                                    //Set the page size to 20
-                                                    .queryParam("page_size", "20")
-                                                    .queryParam("page", rawgPageNumber)
-                                                    .build()), RawgResponseDTO.class, "Fetching games by genre " + genres);
+        RawgResponseDTO response = null;
+        for (String searchTerm : buildSearchTerms(genres)) {
+            response = executeRequest(webClient.get()
+                           .uri(uriBuilder -> uriBuilder.path("/games")
+                                                            .queryParam("genres", searchTerm)
+                                                            .queryParam("key", apiKey)
+                                                            //Set the page size to 20
+                                                            .queryParam("page_size", "20")
+                                                            .queryParam("page", rawgPageNumber)
+                                                            .build()), RawgResponseDTO.class, "Fetching games by genre " + searchTerm);
+            if (response != null && response.results() != null && !response.results().isEmpty()) {
+                return response;
+            }
+        }
+        return response;
     }
     public RawgResponseDTO getGamesByDeveloper(String developer, Pageable pageable){
         validateQueryText(developer, "Developer");
