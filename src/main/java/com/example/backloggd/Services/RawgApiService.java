@@ -86,8 +86,9 @@ public class RawgApiService {
         validateQueryText(developer, "Developer");
         int rawgPageNumber = resolveRawgPageNumber(pageable);
 
+        String normalizedDeveloper = developer.trim();
         RawgResponseDTO response = null;
-        for (String searchTerm : buildSearchTerms(developer)) {
+        for (String searchTerm : buildSearchTerms(normalizedDeveloper)) {
             response = executeRequest(webClient.get()
                            .uri(uriBuilder -> uriBuilder.path("/games")
                                                             .queryParam("developers", searchTerm)
@@ -189,15 +190,13 @@ public class RawgApiService {
         String normalized = gameName.trim();
         String lowerCase = normalized.toLowerCase(Locale.ROOT);
         String titleCase = toTitleCase(normalized);
+        String slug = toSlug(normalized);
 
         List<String> searchTerms = new ArrayList<>();
-        searchTerms.add(normalized);
-        if (!lowerCase.equals(normalized)) {
-            searchTerms.add(lowerCase);
-        }
-        if (!titleCase.equals(normalized) && !titleCase.equals(lowerCase)) {
-            searchTerms.add(titleCase);
-        }
+        addSearchTerm(searchTerms, normalized);
+        addSearchTerm(searchTerms, lowerCase);
+        addSearchTerm(searchTerms, titleCase);
+        addSearchTerm(searchTerms, slug);
         return searchTerms;
     }
 
@@ -235,5 +234,11 @@ public class RawgApiService {
             }
         }
         return builder.toString();
+    }
+
+    private String toSlug(String value) {
+        String normalized = value.trim().toLowerCase(Locale.ROOT);
+        normalized = normalized.replaceAll("[^a-z0-9]+", "-");
+        return normalized.replaceAll("^-|-$", "");
     }
 }
