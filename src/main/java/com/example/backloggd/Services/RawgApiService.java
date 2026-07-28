@@ -142,8 +142,9 @@ public class RawgApiService {
         validateQueryText(tags, "Tags");
         int rawgPageNumber = resolveRawgPageNumber(pageable);
 
+        String normalizedTags = tags.trim();
         RawgResponseDTO response = null;
-        for (String searchTerm : buildSearchTerms(tags)) {
+        for (String searchTerm : buildSearchTerms(normalizedTags)) {
             response = executeRequest(webClient.get()
                     .uri(uriBuilder -> uriBuilder.path("/games")
                            .queryParam("tags", searchTerm)
