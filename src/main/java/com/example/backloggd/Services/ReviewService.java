@@ -56,6 +56,8 @@ public class ReviewService {
         }
         ReviewModel reviewModel = new ReviewModel();
         BeanUtils.copyProperties(gameReviewDTO, reviewModel);
+        reviewModel.setGameName(gameName);
+        reviewModel.setUserName(authentication.getName());
         reviewModel.setGame(game);
         reviewModel.setUserModel(user);
         var saved = reviewRepository.save(reviewModel);
@@ -67,6 +69,53 @@ public class ReviewService {
                 saved.getGameTime());
         logger.info("Review published for {} by {}.", gameName, authentication.getName());
 
+        return ResponseEntity.ok(reviewResponseDTO);
+    }
+
+    public ResponseEntity<String> deleteReview(String gameName, Authentication authentication){
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new IllegalArgumentException("Authentication is required.");
+        }
+        if (gameName == null || gameName.isBlank()) {
+            throw new IllegalArgumentException("Game name is required.");
+        }
+        var review = reviewRepository.findByGameGameNameAndUserModelUserName(gameName, authentication.getName());
+        if (review.isEmpty()) {
+            logger.warn("No review found for game {} by user {}.", gameName, authentication.getName());
+            throw new IllegalArgumentException("Review not found.");
+        }
+        reviewRepository.delete(review.get());
+        logger.info("Review deleted for {} by {}.", gameName, authentication.getName());
+        return ResponseEntity.ok("Review deleted successfully.");
+    }
+
+    public ResponseEntity<ReviewResponseDTO> updateReview(String gameName, Authentication authentication, GameReviewDTO gameReviewDTO){
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new IllegalArgumentException("Authentication is required.");
+        }
+        if (gameName == null || gameName.isBlank()) {
+            throw new IllegalArgumentException("Game name is required.");
+        }
+        if (gameReviewDTO == null) {
+            throw new IllegalArgumentException("Review data is required.");
+        }
+        var review = reviewRepository.findByGameGameNameAndUserModelUserName(gameName, authentication.getName());
+        if (review.isEmpty()) {
+            logger.warn("No review found for game {} by user {}.", gameName, authentication.getName());
+            throw new IllegalArgumentException("Review not found.");
+        }
+        ReviewModel reviewModel = review.get();
+        reviewModel.setRating(gameReviewDTO.rating());
+        reviewModel.setReview(gameReviewDTO.review());
+        reviewModel.setGameTime(gameReviewDTO.gameTime());
+        var updated = reviewRepository.save(reviewModel);
+        ReviewResponseDTO reviewResponseDTO = new ReviewResponseDTO(
+                updated.getGameName(),
+                authentication.getName(),
+                updated.getReview(),
+                updated.getRating(),
+                updated.getGameTime());
+        logger.info("Review updated for {} by {}.", gameName, authentication.getName());
         return ResponseEntity.ok(reviewResponseDTO);
     }
 }
