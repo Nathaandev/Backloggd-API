@@ -12,4 +12,6 @@ public interface ReviewRepository extends JpaRepository<ReviewModel, Long> {
     List<ReviewModel> findByGameGameName(String gameName);
 
     Optional<ReviewModel> findByGameGameNameAndUserModelUserName(String gameName, String userName);
+
+    List<ReviewModel> findByUserModelUserName(String userName);
 }
