@@ -1,6 +1,5 @@
 package com.example.backloggd.Models;
 
-import com.example.backloggd.DTO.UserRegistrationDTO;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -16,22 +15,21 @@ public class UserModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    @Column(unique = true, nullable = false)
     private String userName;
 
     private String password;
 
-    public UserModel(UserRegistrationDTO userRegistrationDTO) {
+    public UserModel(String userName, String password) {
+        this.userName = userName;
+        this.password = password;
     }
 
-    public UserModel(UserModel byUserName) {
+    public UserModel() {
     }
 
     public Long getUserId() {
         return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
     }
 
     public String getUserName() {
@@ -57,14 +55,4 @@ public class UserModel {
     public void setWishlist(List<GamesModel> wishlist) {
         this.wishlist = wishlist;
     }
-
-    public UserModel(String userName, String password) {
-        this.userName = userName;
-        this.password = password;
-    }
-
-    public UserModel() {
-    }
-
-
 }
