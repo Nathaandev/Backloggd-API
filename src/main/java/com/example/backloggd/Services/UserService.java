@@ -1,11 +1,14 @@
 package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.UserRegistrationDTO;
+import com.example.backloggd.DTO.UserProfileDTO;
+import com.example.backloggd.DTO.ReviewSummaryDTO;
 import com.example.backloggd.Exceptions.UsernameAlreadyInUseException;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.UserModel;
 import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Repository.UserRepository;
+import com.example.backloggd.Repository.ReviewRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -30,12 +33,14 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final GameService gameService;
     private final GameRepository gameRepository;
+    private final ReviewRepository reviewRepository;
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, GameService gameService, GameRepository gameRepository) {
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, GameService gameService, GameRepository gameRepository, ReviewRepository reviewRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.gameService = gameService;
         this.gameRepository = gameRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     public ResponseEntity<UserModel> signUp(UserRegistrationDTO userRegistrationDTO){
@@ -133,5 +138,21 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok("Game deleted.");
     }
 
+    public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication){
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new IllegalArgumentException("Authentication is required.");
+        }
+        UserModel user = userRepository.findByUserName(authentication.getName());
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found.");
+        }
+        var userReviews = reviewRepository.findByUserModelUserName(authentication.getName());
+        List<ReviewSummaryDTO> reviews = new ArrayList<>();
+        for (var review : userReviews) {
+            reviews.add(new ReviewSummaryDTO(review.getGameName(), review.getRating(), review.getReview(), review.getGameTime()));
+        }
+        logger.info("Profile retrieved for {}.", authentication.getName());
+        return ResponseEntity.ok(new UserProfileDTO(user.getUserName(), reviews));
+    }
 
 }

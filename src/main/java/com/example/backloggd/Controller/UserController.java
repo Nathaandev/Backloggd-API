@@ -1,6 +1,7 @@
 package com.example.backloggd.Controller;
 
 import com.example.backloggd.DTO.UserRegistrationDTO;
+import com.example.backloggd.DTO.UserProfileDTO;
 import com.example.backloggd.Models.UserModel;
 import com.example.backloggd.Services.UserService;
 import jakarta.validation.Valid;
@@ -22,6 +23,10 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<UserModel> signup(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO){
         return userService.signUp(userRegistrationDTO);
+    }
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication){
+        return userService.getProfile(authentication);
     }
     @PostMapping("/wishlist/{gameName}")
     public ResponseEntity<String> addToWishlist(@Valid @PathVariable String gameName, Authentication authentication){
