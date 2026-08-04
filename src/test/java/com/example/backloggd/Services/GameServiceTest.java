@@ -241,7 +241,38 @@ class GameServiceTest {
         // only good should be checked
         verify(gameService, times(1)).checkIfGameIsInDatabase("Good");
     }
+
+    @Test
+    void searchGameByDeveloper_savesMissingGamesToRepository() {
+        PageRequest pageable = PageRequest.of(0, 10);
+        RawgGameDTO r1 = new RawgGameDTO(21, "NewOne", "d", "2020-01-01", List.of(), 70, List.of(), List.of(), List.of(), List.of());
+        RawgResponseDTO response = new RawgResponseDTO(List.of(r1), 1);
+        when(rawgApiService.getGamesByDeveloper("DevName", pageable)).thenReturn(response);
+        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(List.of(new GameSummaryDTO(21, "NewOne", "2020", 70, "", "", "desc", "dev", "pub", "", 0.0)));
+        when(gameRepository.findBygameNameIgnoreCase("NewOne")).thenReturn(Optional.empty());
+
+        gameService.searchGameByDeveloper("DevName", pageable);
+
+        verify(gameRepository).save(any(GamesModel.class));
+    }
+
+    @Test
+    void searchGameByDeveloper_doesNotSaveWhenGameAlreadyExists() {
+        PageRequest pageable = PageRequest.of(0, 10);
+        RawgGameDTO r1 = new RawgGameDTO(22, "Exists", "d", "2020-01-01", List.of(), 70, List.of(), List.of(), List.of(), List.of());
+        RawgResponseDTO response = new RawgResponseDTO(List.of(r1), 1);
+        when(rawgApiService.getGamesByDeveloper("Dev2", pageable)).thenReturn(response);
+        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(List.of(new GameSummaryDTO(22, "Exists", "2020", 70, "", "", "desc", "dev", "pub", "", 0.0)));
+        GamesModel existing = new GamesModel();
+        existing.setGameName("Exists");
+        when(gameRepository.findBygameNameIgnoreCase("Exists")).thenReturn(Optional.of(existing));
+
+        gameService.searchGameByDeveloper("Dev2", pageable);
+
+        verify(gameRepository, never()).save(argThat(g -> "Exists".equals(g.getGameName())==false));
+    }
 }
+
 
 
 
