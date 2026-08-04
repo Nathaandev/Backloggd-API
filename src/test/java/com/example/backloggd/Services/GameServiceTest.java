@@ -163,4 +163,12 @@ class GameServiceTest {
 
         assertThrows(com.example.backloggd.Exceptions.RawgApiException.class, () -> gameService.checkIfGameIsInDatabase("MissingDetails"));
     }
+
+    @Test
+    void searchGame_throwsWhenGameNotFoundAfterLookup() {
+        when(gameRepository.findBygameNameIgnoreCase("Ghost")).thenReturn(Optional.empty());
+        when(rawgApiService.getGames("Ghost")).thenReturn(new RawgResponseDTO(List.of(), 0));
+
+        assertThrows(IllegalArgumentException.class, () -> gameService.searchGame("Ghost"));
+    }
 }
