@@ -111,4 +111,56 @@ class GameServiceTest {
         assertEquals(404, response.getStatusCode().value());
         assertEquals("Game was not found.", response.getBody());
     }
+
+    @Test
+    void checkIfGameIsInDatabase_returnsFoundWhenAlreadyPersisted() {
+        GamesModel game = new GamesModel();
+        game.setGameName("Persisted");
+        when(gameRepository.findBygameNameIgnoreCase("Persisted")).thenReturn(Optional.of(game));
+
+        var resp = gameService.checkIfGameIsInDatabase("Persisted");
+
+        assertEquals(200, resp.getStatusCodeValue());
+        assertEquals("Game found in database.", resp.getBody());
+        verify(rawgApiService, never()).getGames(anyString());
+    }
+
+    @Test
+    void checkIfGameIsInDatabase_addsGameWhenRawgReturnsMatch() {
+        when(gameRepository.findBygameNameIgnoreCase("NewGame")).thenReturn(Optional.empty());
+
+        RawgGameDTO bestMatch = new RawgGameDTO(123, "NewGame", "desc", "2020-01-01", List.of(), 90, List.of(), List.of(), List.of(), List.of());
+        RawgResponseDTO response = new RawgResponseDTO(List.of(bestMatch), 1);
+        when(rawgApiService.getGames("NewGame")).thenReturn(response);
+
+        RawgGameDTO fullDetails = new RawgGameDTO(123, "NewGame", "<p>full</p>", "2020-01-01", List.of(), 90, List.of(), List.of(), List.of(), List.of());
+        when(rawgApiService.GetGameDetailsWithID(123)).thenReturn(fullDetails);
+
+        var resp = gameService.checkIfGameIsInDatabase("NewGame");
+
+        assertEquals(200, resp.getStatusCodeValue());
+        assertEquals("Game added to database.", resp.getBody());
+        verify(gameRepository).save(any(GamesModel.class));
+    }
+
+    @Test
+    void checkIfGameIsInDatabase_throwsWhenRawgReturnsMatchWithoutId() {
+        when(gameRepository.findBygameNameIgnoreCase("NoId")).thenReturn(Optional.empty());
+        RawgGameDTO bestMatch = new RawgGameDTO(null, "NoId", "desc", "2020-01-01", List.of(), 50, List.of(), List.of(), List.of(), List.of());
+        RawgResponseDTO response = new RawgResponseDTO(List.of(bestMatch), 1);
+        when(rawgApiService.getGames("NoId")).thenReturn(response);
+
+        assertThrows(com.example.backloggd.Exceptions.RawgApiException.class, () -> gameService.checkIfGameIsInDatabase("NoId"));
+    }
+
+    @Test
+    void checkIfGameIsInDatabase_throwsWhenGetGameDetailsReturnsNull() {
+        when(gameRepository.findBygameNameIgnoreCase("MissingDetails")).thenReturn(Optional.empty());
+        RawgGameDTO bestMatch = new RawgGameDTO(555, "MissingDetails", "desc", "2020-01-01", List.of(), 50, List.of(), List.of(), List.of(), List.of());
+        RawgResponseDTO response = new RawgResponseDTO(List.of(bestMatch), 1);
+        when(rawgApiService.getGames("MissingDetails")).thenReturn(response);
+        when(rawgApiService.GetGameDetailsWithID(555)).thenReturn(null);
+
+        assertThrows(com.example.backloggd.Exceptions.RawgApiException.class, () -> gameService.checkIfGameIsInDatabase("MissingDetails"));
+    }
 }
