@@ -234,7 +234,10 @@ class GameServiceTest {
         RawgGameDTO bad = new RawgGameDTO(11, "Bad", "d", "2020-01-01", List.of(), null, List.of(), List.of(), List.of(), List.of());
         RawgResponseDTO response = new RawgResponseDTO(List.of(good, bad), 2);
         when(rawgApiService.getGamesByMetacritic("asc", pageable)).thenReturn(response);
-        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(List.of());
+        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(new java.util.ArrayList<>(List.of(
+                new GameSummaryDTO(10, "Good", "2020-01-01", 80, "", "", "desc", "dev", "pub", "", 0.0),
+                new GameSummaryDTO(11, "Bad", "2020-01-01", null, "", "", "desc", "dev", "pub", "", 0.0)
+        )));
 
         gameService.searchGamesByMetacritic("asc", pageable);
 
