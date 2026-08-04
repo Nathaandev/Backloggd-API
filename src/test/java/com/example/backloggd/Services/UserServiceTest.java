@@ -99,4 +99,22 @@ class UserServiceTest {
         assertEquals(1, user.getWishlist().size());
         assertEquals("Hades", user.getWishlist().get(0).getGameName());
     }
+
+    @Test
+    void removeGameFromWishlistRemovesExistingGame() {
+        Authentication authentication = new TestingAuthenticationToken("jane", null);
+        UserModel user = new UserModel("jane", "encoded");
+        com.example.backloggd.Models.GamesModel game = new com.example.backloggd.Models.GamesModel();
+        game.setGameName("Hades");
+        user.setWishlist(new ArrayList<>(List.of(game)));
+
+        when(userRepository.findByUserName("jane")).thenReturn(user);
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(java.util.Optional.of(game));
+
+        ResponseEntity<String> response = userService.removeGameFromWishlist("Hades", authentication);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Game deleted.", response.getBody());
+        assertEquals(0, user.getWishlist().size());
+    }
 }
