@@ -116,4 +116,17 @@ class ReviewServiceTest {
         assertEquals(50, response.getBody().gameTime());
     }
 
+    @Test
+    void deleteReviewRemovesExistingReview() {
+        Authentication authentication = new TestingAuthenticationToken("jane", null);
+        ReviewModel existingReview = new ReviewModel();
+
+        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.of(existingReview));
+
+        ResponseEntity<String> response = reviewService.deleteReview("Hades", authentication);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Review deleted successfully.", response.getBody());
+        verify(reviewRepository).delete(existingReview);
+    }
 }
