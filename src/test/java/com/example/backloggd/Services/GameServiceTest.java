@@ -190,7 +190,10 @@ class GameServiceTest {
         RawgGameDTO g2 = new RawgGameDTO(2, "G2", "d", "2020-01-01", List.of(), 20, List.of(), List.of(), List.of(), List.of());
         RawgResponseDTO response = new RawgResponseDTO(List.of(g1, g2), 2);
         when(rawgApiService.getGamesByGenre("action", pageable)).thenReturn(response);
-        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(List.of());
+        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(new java.util.ArrayList<>(List.of(
+                new GameSummaryDTO(1, "G1", "2020-01-01", 10, "", "", "desc", "dev", "pub", "", 0.0),
+                new GameSummaryDTO(2, "G2", "2020-01-01", 20, "", "", "desc", "dev", "pub", "", 0.0)
+        )));
 
         gameService.searchGameByGenre("action", pageable);
 
