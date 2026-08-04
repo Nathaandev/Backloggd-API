@@ -129,4 +129,14 @@ class ReviewServiceTest {
         assertEquals("Review deleted successfully.", response.getBody());
         verify(reviewRepository).delete(existingReview);
     }
+
+    @Test
+    void deleteReviewThrowsWhenNoReviewExists() {
+        Authentication authentication = new TestingAuthenticationToken("jane", null);
+
+        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> reviewService.deleteReview("Hades", authentication));
+    }
 }
