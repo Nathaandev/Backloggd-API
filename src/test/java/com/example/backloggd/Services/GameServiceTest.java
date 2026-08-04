@@ -69,7 +69,6 @@ class GameServiceTest {
         doReturn(ResponseEntity.ok("Game found in database.")).when(gameService).checkIfGameIsInDatabase("Hades");
         when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(Optional.of(game));
         when(reviewRepository.findByGameGameName("Hades")).thenReturn(List.of(review));
-        when(reviewRepository.findByGameGameName("Hades")).thenReturn(List.of(review));
 
         ResponseEntity<GameResponseDTO> response = gameService.searchGame("Hades");
 
@@ -77,5 +76,19 @@ class GameServiceTest {
         assertEquals("Hades", response.getBody().gameName());
         assertEquals(4.5d, response.getBody().rating());
         assertEquals(1, response.getBody().reviews().size());
+    }
+
+    @Test
+    void checkIfGameIsInDatabaseReturnsNotFoundWhenRawgReturnsNothing() {
+        gameService = spy(new GameService(rawgApiService, reviewRepository, mapper));
+        gameService.gameRepository = gameRepository;
+
+        when(gameRepository.findBygameNameIgnoreCase("Unknown")).thenReturn(Optional.empty());
+        when(rawgApiService.getGames("Unknown")).thenReturn(new com.example.backloggd.DTO.RawgResponseDTO(0, List.of()));
+
+        ResponseEntity<String> response = gameService.checkIfGameIsInDatabase("Unknown");
+
+        assertEquals(404, response.getStatusCode().value());
+        assertEquals("Game was not found.", response.getBody());
     }
 }
