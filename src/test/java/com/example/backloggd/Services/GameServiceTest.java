@@ -216,6 +216,32 @@ class GameServiceTest {
 
         verify(rawgApiService).getGamesByTags("multiplayer", pageable);
     }
+
+    @Test
+    void searchGamesByMetacritic_returnsEmptyPageWhenRawgReturnsNoResults() {
+        PageRequest pageable = PageRequest.of(0, 10);
+        when(rawgApiService.getGamesByMetacritic("desc", pageable)).thenReturn(new RawgResponseDTO(List.of(), 0));
+
+        var page = gameService.searchGamesByMetacritic("desc", pageable);
+
+        assertEquals(0, page.getTotalElements());
+    }
+
+    @Test
+    void searchGamesByMetacritic_filtersNullMetacriticAndChecksDatabase() {
+        PageRequest pageable = PageRequest.of(0, 10);
+        RawgGameDTO good = new RawgGameDTO(10, "Good", "d", "2020-01-01", List.of(), 80, List.of(), List.of(), List.of(), List.of());
+        RawgGameDTO bad = new RawgGameDTO(11, "Bad", "d", "2020-01-01", List.of(), null, List.of(), List.of(), List.of(), List.of());
+        RawgResponseDTO response = new RawgResponseDTO(List.of(good, bad), 2);
+        when(rawgApiService.getGamesByMetacritic("asc", pageable)).thenReturn(response);
+        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(List.of());
+
+        gameService.searchGamesByMetacritic("asc", pageable);
+
+        // only good should be checked
+        verify(gameService, times(1)).checkIfGameIsInDatabase("Good");
+    }
 }
+
 
 
