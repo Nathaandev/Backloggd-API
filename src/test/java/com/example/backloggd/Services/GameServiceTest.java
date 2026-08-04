@@ -196,5 +196,26 @@ class GameServiceTest {
 
         verify(gameService, times(2)).checkIfGameIsInDatabase(anyString());
     }
+
+    @Test
+    void searchGamesByPublishers_callsRawgWithPublisherParameter() {
+        PageRequest pageable = PageRequest.of(0, 5);
+        when(rawgApiService.getGamesByPublishers("Ubisoft", pageable)).thenReturn(new RawgResponseDTO(List.of(), 0));
+
+        gameService.searchGamesByPublishers("Ubisoft", pageable);
+
+        verify(rawgApiService).getGamesByPublishers("Ubisoft", pageable);
+    }
+
+    @Test
+    void searchGamesByTags_callsRawgWithTagsParameter() {
+        PageRequest pageable = PageRequest.of(0, 5);
+        when(rawgApiService.getGamesByTags("multiplayer", pageable)).thenReturn(new RawgResponseDTO(List.of(), 0));
+
+        gameService.searchGamesByTags("multiplayer", pageable);
+
+        verify(rawgApiService).getGamesByTags("multiplayer", pageable);
+    }
 }
+
 
