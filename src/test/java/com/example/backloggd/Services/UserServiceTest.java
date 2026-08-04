@@ -19,6 +19,7 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,4 +80,23 @@ class UserServiceTest {
         assertEquals(35, summary.gameTime());
     }
 
+    @Test
+    void addGameToWishlistAddsGameToUserWishlist() {
+        Authentication authentication = new TestingAuthenticationToken("jane", null);
+        UserModel user = new UserModel("jane", "encoded");
+        user.setWishlist(new ArrayList<>());
+        com.example.backloggd.Models.GamesModel game = new com.example.backloggd.Models.GamesModel();
+        game.setGameName("Hades");
+
+        when(userRepository.findByUserName("jane")).thenReturn(user);
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(java.util.Optional.of(game));
+        when(gameService.checkIfGameIsInDatabase("Hades")).thenReturn(ResponseEntity.ok("Game found in database."));
+
+        ResponseEntity<String> response = userService.addGameToWishlist("Hades", authentication);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Game added to wishlist.", response.getBody());
+        assertEquals(1, user.getWishlist().size());
+        assertEquals("Hades", user.getWishlist().get(0).getGameName());
+    }
 }
