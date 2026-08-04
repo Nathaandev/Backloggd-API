@@ -1,24 +1,28 @@
 package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.GameResponseDTO;
+import com.example.backloggd.DTO.RawgGameDTO;
+import com.example.backloggd.DTO.RawgResponseDTO;
+import com.example.backloggd.DTO.GameSummaryDTO;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Repository.ReviewRepository;
 import com.example.backloggd.Util.GameDataMappers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GameServiceTest {
@@ -37,11 +41,14 @@ class GameServiceTest {
 
     private GameService gameService;
 
-    @Test
-    void calculateGameRatingReturnsAverageForExistingReviews() {
+    @BeforeEach
+    void setup() {
         gameService = spy(new GameService(rawgApiService, reviewRepository, mapper));
         gameService.gameRepository = gameRepository;
+    }
 
+    @Test
+    void calculateGameRatingReturnsAverageForExistingReviews() {
         ReviewModel reviewOne = new ReviewModel();
         reviewOne.setRating(4.0f);
         ReviewModel reviewTwo = new ReviewModel();
@@ -55,10 +62,26 @@ class GameServiceTest {
     }
 
     @Test
-    void searchGameReturnsGameResponseWithReviewsAndRating() {
-        gameService = spy(new GameService(rawgApiService, reviewRepository, mapper));
-        gameService.gameRepository = gameRepository;
+    void calculateGameRating_returnsZeroWhenNoReviews() {
+        when(reviewRepository.findByGameGameName("NoReviews")).thenReturn(List.of());
 
+        double rating = gameService.calculateGameRating("NoReviews");
+
+        assertEquals(0.0d, rating);
+    }
+
+    @Test
+    void calculateGameRating_throwsWhenGameNameIsNull() {
+        assertThrows(IllegalArgumentException.class, () -> gameService.calculateGameRating(null));
+    }
+
+    @Test
+    void calculateGameRating_throwsWhenGameNameIsBlank() {
+        assertThrows(IllegalArgumentException.class, () -> gameService.calculateGameRating("   "));
+    }
+
+    @Test
+    void searchGameReturnsGameResponseWithReviewsAndRating() {
         GamesModel game = new GamesModel();
         game.setGameName("Hades");
         game.setGameDescription("A dungeon crawler");
@@ -80,11 +103,8 @@ class GameServiceTest {
 
     @Test
     void checkIfGameIsInDatabaseReturnsNotFoundWhenRawgReturnsNothing() {
-        gameService = spy(new GameService(rawgApiService, reviewRepository, mapper));
-        gameService.gameRepository = gameRepository;
-
         when(gameRepository.findBygameNameIgnoreCase("Unknown")).thenReturn(Optional.empty());
-        when(rawgApiService.getGames("Unknown")).thenReturn(new com.example.backloggd.DTO.RawgResponseDTO(List.of(), 0));
+        when(rawgApiService.getGames("Unknown")).thenReturn(new RawgResponseDTO(List.of(), 0));
 
         ResponseEntity<String> response = gameService.checkIfGameIsInDatabase("Unknown");
 
