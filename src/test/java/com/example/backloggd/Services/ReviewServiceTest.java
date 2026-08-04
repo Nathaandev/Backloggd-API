@@ -94,4 +94,26 @@ class ReviewServiceTest {
         assertThrows(AlreadyPublishedAReviewException.class,
                 () -> reviewService.publishReviews("Hades", authentication, request));
     }
+
+    @Test
+    void updateReviewUpdatesExistingReview() {
+        GameReviewDTO request = new GameReviewDTO(3.0f, "Updated review", 50);
+        Authentication authentication = new TestingAuthenticationToken("jane", null);
+        ReviewModel existingReview = new ReviewModel();
+        existingReview.setRating(4.0f);
+        existingReview.setReview("Old review");
+        existingReview.setGameTime(10);
+        existingReview.setGameName("Hades");
+
+        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.of(existingReview));
+        when(reviewRepository.save(existingReview)).thenReturn(existingReview);
+
+        ResponseEntity<ReviewResponseDTO> response = reviewService.updateReview("Hades", authentication, request);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Updated review", response.getBody().review());
+        assertEquals(3.0f, response.getBody().rating());
+        assertEquals(50, response.getBody().gameTime());
+    }
+
 }
