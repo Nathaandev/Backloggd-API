@@ -1,18 +1,23 @@
 package com.example.backloggd.Services;
 
+import com.example.backloggd.DTO.GameResponseDTO;
+import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.GameRepository;
 import com.example.backloggd.Repository.ReviewRepository;
 import com.example.backloggd.Util.GameDataMappers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,11 +35,13 @@ class GameServiceTest {
     @Mock
     private GameDataMappers mapper;
 
-    @InjectMocks
     private GameService gameService;
 
     @Test
     void calculateGameRatingReturnsAverageForExistingReviews() {
+        gameService = spy(new GameService(rawgApiService, reviewRepository, mapper));
+        gameService.gameRepository = gameRepository;
+
         ReviewModel reviewOne = new ReviewModel();
         reviewOne.setRating(4.0f);
         ReviewModel reviewTwo = new ReviewModel();
@@ -45,5 +52,30 @@ class GameServiceTest {
         double rating = gameService.calculateGameRating("Hades");
 
         assertEquals(3.0d, rating);
+    }
+
+    @Test
+    void searchGameReturnsGameResponseWithReviewsAndRating() {
+        gameService = spy(new GameService(rawgApiService, reviewRepository, mapper));
+        gameService.gameRepository = gameRepository;
+
+        GamesModel game = new GamesModel();
+        game.setGameName("Hades");
+        game.setGameDescription("A dungeon crawler");
+        ReviewModel review = new ReviewModel();
+        review.setRating(4.5f);
+        review.setGameName("Hades");
+
+        doReturn(ResponseEntity.ok("Game found in database.")).when(gameService).checkIfGameIsInDatabase("Hades");
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(Optional.of(game));
+        when(reviewRepository.findByGameGameName("Hades")).thenReturn(List.of(review));
+        when(reviewRepository.findByGameGameName("Hades")).thenReturn(List.of(review));
+
+        ResponseEntity<GameResponseDTO> response = gameService.searchGame("Hades");
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Hades", response.getBody().gameName());
+        assertEquals(4.5d, response.getBody().rating());
+        assertEquals(1, response.getBody().reviews().size());
     }
 }
