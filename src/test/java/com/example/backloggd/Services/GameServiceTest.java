@@ -84,7 +84,7 @@ class GameServiceTest {
         gameService.gameRepository = gameRepository;
 
         when(gameRepository.findBygameNameIgnoreCase("Unknown")).thenReturn(Optional.empty());
-        when(rawgApiService.getGames("Unknown")).thenReturn(new com.example.backloggd.DTO.RawgResponseDTO(0, List.of()));
+        when(rawgApiService.getGames("Unknown")).thenReturn(new com.example.backloggd.DTO.RawgResponseDTO(List.of(), 0));
 
         ResponseEntity<String> response = gameService.checkIfGameIsInDatabase("Unknown");
 
