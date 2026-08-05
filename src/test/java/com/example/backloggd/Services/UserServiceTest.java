@@ -21,8 +21,8 @@ import org.springframework.security.core.Authentication;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -138,8 +138,6 @@ class UserServiceTest {
     @Test
     void addGameToWishlist_throwsWhenGameNotFound() {
         Authentication auth = new TestingAuthenticationToken("jane", null);
-        UserModel user = new UserModel("jane", "encoded");
-        when(userRepository.findByUserName("jane")).thenReturn(user);
         when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(java.util.Optional.empty());
         assertThrows(IllegalArgumentException.class, () -> userService.addGameToWishlist("Hades", auth));
     }

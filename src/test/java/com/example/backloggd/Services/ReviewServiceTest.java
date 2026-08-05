@@ -1,4 +1,4 @@
-﻿package com.example.backloggd.Services;
+package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.GameReviewDTO;
 import com.example.backloggd.DTO.ReviewResponseDTO;
