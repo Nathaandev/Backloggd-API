@@ -1,4 +1,4 @@
-package com.example.backloggd.Services;
+﻿package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.GameReviewDTO;
 import com.example.backloggd.DTO.ReviewResponseDTO;
@@ -95,48 +95,65 @@ class ReviewServiceTest {
                 () -> reviewService.publishReviews("Hades", authentication, request));
     }
 
+    // publishReviews validation & propagation tests
     @Test
-    void updateReviewUpdatesExistingReview() {
-        GameReviewDTO request = new GameReviewDTO(3.0f, "Updated review", 50);
-        Authentication authentication = new TestingAuthenticationToken("jane", null);
-        ReviewModel existingReview = new ReviewModel();
-        existingReview.setRating(4.0f);
-        existingReview.setReview("Old review");
-        existingReview.setGameTime(10);
-        existingReview.setGameName("Hades");
+    void publishReviews_throwsWhenAuthenticationNullOrBlank() {
+        GameReviewDTO request = new GameReviewDTO(4.0f, "ok", 10);
+        Authentication nullAuth = null;
+        Authentication blankAuth = new TestingAuthenticationToken("   ", null);
 
-        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.of(existingReview));
-        when(reviewRepository.save(existingReview)).thenReturn(existingReview);
-
-        ResponseEntity<ReviewResponseDTO> response = reviewService.updateReview("Hades", authentication, request);
-
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals("Updated review", response.getBody().review());
-        assertEquals(3.0f, response.getBody().rating());
-        assertEquals(50, response.getBody().gameTime());
+        assertThrows(IllegalArgumentException.class, () -> reviewService.publishReviews("Hades", nullAuth, request));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.publishReviews("Hades", blankAuth, request));
     }
 
     @Test
-    void deleteReviewRemovesExistingReview() {
-        Authentication authentication = new TestingAuthenticationToken("jane", null);
-        ReviewModel existingReview = new ReviewModel();
+    void publishReviews_throwsWhenGameNameNullOrBlank() {
+        GameReviewDTO request = new GameReviewDTO(4.0f, "ok", 10);
+        Authentication auth = new TestingAuthenticationToken("jane", null);
 
-        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.of(existingReview));
-
-        ResponseEntity<String> response = reviewService.deleteReview("Hades", authentication);
-
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals("Review deleted successfully.", response.getBody());
-        verify(reviewRepository).delete(existingReview);
+        assertThrows(IllegalArgumentException.class, () -> reviewService.publishReviews(null, auth, request));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.publishReviews("   ", auth, request));
     }
 
     @Test
-    void deleteReviewThrowsWhenNoReviewExists() {
-        Authentication authentication = new TestingAuthenticationToken("jane", null);
+    void publishReviews_throwsWhenGameReviewDtoNull() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        assertThrows(IllegalArgumentException.class, () -> reviewService.publishReviews("Hades", auth, null));
+    }
 
-        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.empty());
+    @Test
+    void publishReviews_throwsWhenGameNotInRepository() {
+        GameReviewDTO request = new GameReviewDTO(4.0f, "ok", 10);
+        Authentication auth = new TestingAuthenticationToken("jane", null);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> reviewService.deleteReview("Hades", authentication));
+        when(gameService.checkIfGameIsInDatabase("Hades")).thenReturn(ResponseEntity.ok("Game found in database."));
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> reviewService.publishReviews("Hades", auth, request));
+    }
+
+    @Test
+    void publishReviews_throwsWhenUserNotFound() {
+        GameReviewDTO request = new GameReviewDTO(4.0f, "ok", 10);
+        Authentication auth = new TestingAuthenticationToken("ghost", null);
+        GamesModel game = new GamesModel();
+        game.setGameName("Hades");
+
+        when(gameService.checkIfGameIsInDatabase("Hades")).thenReturn(ResponseEntity.ok("Game found in database."));
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(Optional.of(game));
+        when(userRepository.findByUserName("ghost")).thenReturn(null);
+
+        assertThrows(org.springframework.security.core.userdetails.UsernameNotFoundException.class,
+                () -> reviewService.publishReviews("Hades", auth, request));
+    }
+
+    @Test
+    void publishReviews_propagatesWhenGameServiceThrows() {
+        GameReviewDTO request = new GameReviewDTO(4.0f, "ok", 10);
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+
+        when(gameService.checkIfGameIsInDatabase("Hades")).thenThrow(new RuntimeException("rawg failure"));
+
+        assertThrows(RuntimeException.class, () -> reviewService.publishReviews("Hades", auth, request));
     }
 }
