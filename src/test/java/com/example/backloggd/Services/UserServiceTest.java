@@ -203,6 +203,53 @@ class UserServiceTest {
         assertEquals(0, resp.getBody().size());
     }
 
+    // removeGameFromWishlist negative and edge-case tests
+    @Test
+    void removeGameFromWishlist_throwsWhenAuthenticationNullOrBlank() {
+        assertThrows(IllegalArgumentException.class, () -> userService.removeGameFromWishlist("Hades", null));
+        Authentication authBlank = new TestingAuthenticationToken("   ", null);
+        assertThrows(IllegalArgumentException.class, () -> userService.removeGameFromWishlist("Hades", authBlank));
+    }
+
+    @Test
+    void removeGameFromWishlist_throwsWhenGameNameNullOrBlank() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        assertThrows(IllegalArgumentException.class, () -> userService.removeGameFromWishlist(null, auth));
+        assertThrows(IllegalArgumentException.class, () -> userService.removeGameFromWishlist("   ", auth));
+    }
+
+    @Test
+    void removeGameFromWishlist_throwsWhenUserNotFound() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        when(userRepository.findByUserName("jane")).thenReturn(null);
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(java.util.Optional.of(new com.example.backloggd.Models.GamesModel()));
+        assertThrows(org.springframework.security.core.userdetails.UsernameNotFoundException.class, () -> userService.removeGameFromWishlist("Hades", auth));
+    }
+
+    @Test
+    void removeGameFromWishlist_throwsWhenGameNotFound() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        UserModel user = new UserModel("jane", "encoded");
+        user.setWishlist(new ArrayList<>());
+        when(userRepository.findByUserName("jane")).thenReturn(user);
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(java.util.Optional.empty());
+        assertThrows(IllegalArgumentException.class, () -> userService.removeGameFromWishlist("Hades", auth));
+    }
+
+    @Test
+    void removeGameFromWishlist_handlesNullWishlistByInitializing() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        UserModel user = new UserModel("jane", "encoded");
+        user.setWishlist(null);
+        com.example.backloggd.Models.GamesModel game = new com.example.backloggd.Models.GamesModel();
+        game.setGameName("Hades");
+        when(userRepository.findByUserName("jane")).thenReturn(user);
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(java.util.Optional.of(game));
+        ResponseEntity<String> resp = userService.removeGameFromWishlist("Hades", auth);
+        assertEquals(200, resp.getStatusCode().value());
+        assertEquals(0, user.getWishlist().size());
+    }
+
     // signUp additional tests
     @Test
     void signUpSuccessReturnsSavedUser() {
