@@ -156,4 +156,63 @@ class ReviewServiceTest {
 
         assertThrows(RuntimeException.class, () -> reviewService.publishReviews("Hades", auth, request));
     }
+
+    // updateReview happy path
+    @Test
+    void updateReviewUpdatesExistingReview() {
+        GameReviewDTO request = new GameReviewDTO(3.0f, "Updated review", 50);
+        Authentication authentication = new TestingAuthenticationToken("jane", null);
+        ReviewModel existingReview = new ReviewModel();
+        existingReview.setRating(4.0f);
+        existingReview.setReview("Old review");
+        existingReview.setGameTime(10);
+        existingReview.setGameName("Hades");
+
+        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.of(existingReview));
+        when(reviewRepository.save(existingReview)).thenReturn(existingReview);
+
+        ResponseEntity<ReviewResponseDTO> response = reviewService.updateReview("Hades", authentication, request);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Updated review", response.getBody().review());
+        assertEquals(3.0f, response.getBody().rating());
+        assertEquals(50, response.getBody().gameTime());
+    }
+
+    // updateReview validation tests
+    @Test
+    void updateReview_throwsWhenAuthenticationNullOrBlank() {
+        GameReviewDTO request = new GameReviewDTO(3.0f, "up", 20);
+        Authentication nullAuth = null;
+        Authentication blankAuth = new TestingAuthenticationToken("", null);
+
+        assertThrows(IllegalArgumentException.class, () -> reviewService.updateReview("Hades", nullAuth, request));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.updateReview("Hades", blankAuth, request));
+    }
+
+    @Test
+    void updateReview_throwsWhenGameNameNullOrBlank() {
+        GameReviewDTO request = new GameReviewDTO(3.0f, "up", 20);
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+
+        assertThrows(IllegalArgumentException.class, () -> reviewService.updateReview(null, auth, request));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.updateReview("   ", auth, request));
+    }
+
+    @Test
+    void updateReview_throwsWhenGameReviewDtoNull() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        assertThrows(IllegalArgumentException.class, () -> reviewService.updateReview("Hades", auth, null));
+    }
+
+    @Test
+    void updateReview_throwsWhenReviewNotFound() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        GameReviewDTO request = new GameReviewDTO(3.0f, "up", 20);
+
+        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> reviewService.updateReview("Hades", auth, request));
+    }
+
 }
