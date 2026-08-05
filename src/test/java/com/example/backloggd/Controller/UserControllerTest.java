@@ -44,7 +44,6 @@ class UserControllerTest {
     @Test
     void signupEndpointReturnsRegisteredUser() throws Exception {
         UserModel user = new UserModel("jane", "encoded");
-        user.setUserId(1L);
         when(userService.signUp(any(UserRegistrationDTO.class))).thenReturn(ResponseEntity.ok(user));
 
         mockMvc.perform(post("/signup")
