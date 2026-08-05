@@ -162,6 +162,47 @@ class UserServiceTest {
         assertEquals(0, user.getWishlist().size());
     }
 
+    // getUserWishlist tests
+    @Test
+    void getUserWishlist_successReturnsNames() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        UserModel user = new UserModel("jane", "encoded");
+        com.example.backloggd.Models.GamesModel g = new com.example.backloggd.Models.GamesModel();
+        g.setGameName("Hades");
+        user.setWishlist(new ArrayList<>(List.of(g)));
+        when(userRepository.findByUserName("jane")).thenReturn(user);
+
+        ResponseEntity<java.util.List<String>> resp = userService.getUserWishlist(auth);
+        assertEquals(200, resp.getStatusCode().value());
+        assertEquals(1, resp.getBody().size());
+        assertEquals("Hades", resp.getBody().get(0));
+    }
+
+    @Test
+    void getUserWishlist_throwsWhenAuthenticationNullOrBlank() {
+        assertThrows(IllegalArgumentException.class, () -> userService.getUserWishlist(null));
+        Authentication authBlank = new TestingAuthenticationToken("   ", null);
+        assertThrows(IllegalArgumentException.class, () -> userService.getUserWishlist(authBlank));
+    }
+
+    @Test
+    void getUserWishlist_throwsWhenUserNotFound() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        when(userRepository.findByUserName("jane")).thenReturn(null);
+        assertThrows(org.springframework.security.core.userdetails.UsernameNotFoundException.class, () -> userService.getUserWishlist(auth));
+    }
+
+    @Test
+    void getUserWishlist_returnsEmptyWhenWishlistNull() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        UserModel user = new UserModel("jane", "encoded");
+        user.setWishlist(null);
+        when(userRepository.findByUserName("jane")).thenReturn(user);
+        ResponseEntity<java.util.List<String>> resp = userService.getUserWishlist(auth);
+        assertEquals(200, resp.getStatusCode().value());
+        assertEquals(0, resp.getBody().size());
+    }
+
     // signUp additional tests
     @Test
     void signUpSuccessReturnsSavedUser() {
