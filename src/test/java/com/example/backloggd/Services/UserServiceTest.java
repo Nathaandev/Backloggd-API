@@ -77,6 +77,31 @@ class UserServiceTest {
     }
 
     @Test
+    void getProfile_throwsWhenAuthenticationNullOrBlank() {
+        assertThrows(IllegalArgumentException.class, () -> userService.getProfile(null));
+        Authentication authBlank = new TestingAuthenticationToken("   ", null);
+        assertThrows(IllegalArgumentException.class, () -> userService.getProfile(authBlank));
+    }
+
+    @Test
+    void getProfile_throwsWhenUserNotFound() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        when(userRepository.findByUserName("jane")).thenReturn(null);
+        assertThrows(org.springframework.security.core.userdetails.UsernameNotFoundException.class, () -> userService.getProfile(auth));
+    }
+
+    @Test
+    void getProfile_returnsEmptyReviewsWhenUserHasNoReviews() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        UserModel user = new UserModel("jane", "encoded");
+        when(userRepository.findByUserName("jane")).thenReturn(user);
+        when(reviewRepository.findByUserModelUserName("jane")).thenReturn(List.of());
+        ResponseEntity<UserProfileDTO> resp = userService.getProfile(auth);
+        assertEquals(200, resp.getStatusCode().value());
+        assertEquals(0, resp.getBody().reviews().size());
+    }
+
+    @Test
     void addGameToWishlistAddsGameToUserWishlist() {
         Authentication authentication = new TestingAuthenticationToken("jane", null);
         UserModel user = new UserModel("jane", "encoded");
