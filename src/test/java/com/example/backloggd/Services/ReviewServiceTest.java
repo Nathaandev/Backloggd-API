@@ -215,4 +215,47 @@ class ReviewServiceTest {
         assertThrows(IllegalArgumentException.class, () -> reviewService.updateReview("Hades", auth, request));
     }
 
+    // deleteReview happy path
+    @Test
+    void deleteReviewRemovesExistingReview() {
+        Authentication authentication = new TestingAuthenticationToken("jane", null);
+        ReviewModel existingReview = new ReviewModel();
+
+        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.of(existingReview));
+
+        ResponseEntity<String> response = reviewService.deleteReview("Hades", authentication);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Review deleted successfully.", response.getBody());
+        verify(reviewRepository).delete(existingReview);
+    }
+
+    @Test
+    void deleteReviewThrowsWhenNoReviewExists() {
+        Authentication authentication = new TestingAuthenticationToken("jane", null);
+
+        when(reviewRepository.findByGameGameNameAndUserModelUserName("Hades", "jane")).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> reviewService.deleteReview("Hades", authentication));
+    }
+
+    // deleteReview validation tests
+    @Test
+    void deleteReview_throwsWhenAuthenticationNullOrBlank() {
+        Authentication nullAuth = null;
+        Authentication blankAuth = new TestingAuthenticationToken("", null);
+
+        assertThrows(IllegalArgumentException.class, () -> reviewService.deleteReview("Hades", nullAuth));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.deleteReview("Hades", blankAuth));
+    }
+
+    @Test
+    void deleteReview_throwsWhenGameNameNullOrBlank() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+
+        assertThrows(IllegalArgumentException.class, () -> reviewService.deleteReview(null, auth));
+        assertThrows(IllegalArgumentException.class, () -> reviewService.deleteReview("   ", auth));
+    }
+
 }
