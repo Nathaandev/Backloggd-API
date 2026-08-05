@@ -113,4 +113,37 @@ class UserServiceTest {
         assertEquals("Game deleted.", response.getBody());
         assertEquals(0, user.getWishlist().size());
     }
+
+    // signUp additional tests
+    @Test
+    void signUpSuccessReturnsSavedUser() {
+        // prepare
+        when(userRepository.findByUserName("alice")).thenReturn(null);
+        when(userRepository.save(any(UserModel.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // inject a real PasswordEncoder behavior via mock
+        when(userRepository.findByUserName("alice")).thenReturn(null);
+        // create service with mocked password encoder
+        var service = new UserService(org.mockito.Mockito.mock(org.springframework.security.crypto.password.PasswordEncoder.class), userRepository, gameService, gameRepository, reviewRepository);
+
+        UserRegistrationDTO dto = new UserRegistrationDTO("alice", "pw");
+        assertDoesNotThrow(() -> service.signUp(dto));
+    }
+
+    @Test
+    void signUp_throwsWhenDtoNull() {
+        assertThrows(IllegalArgumentException.class, () -> userService.signUp(null));
+    }
+
+    @Test
+    void signUp_throwsWhenUsernameNullOrBlank() {
+        assertThrows(IllegalArgumentException.class, () -> userService.signUp(new UserRegistrationDTO(null, "p")));
+        assertThrows(IllegalArgumentException.class, () -> userService.signUp(new UserRegistrationDTO("   ", "p")));
+    }
+
+    @Test
+    void signUp_throwsWhenPasswordNullOrBlank() {
+        assertThrows(IllegalArgumentException.class, () -> userService.signUp(new UserRegistrationDTO("bob", null)));
+        assertThrows(IllegalArgumentException.class, () -> userService.signUp(new UserRegistrationDTO("bob", "   ")));
+    }
 }
