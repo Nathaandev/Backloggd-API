@@ -97,6 +97,54 @@ class UserServiceTest {
     }
 
     @Test
+    void addGameToWishlist_throwsWhenAuthenticationNullOrBlank() {
+        assertThrows(IllegalArgumentException.class, () -> userService.addGameToWishlist("Hades", null));
+        Authentication authBlank = new TestingAuthenticationToken("   ", null);
+        assertThrows(IllegalArgumentException.class, () -> userService.addGameToWishlist("Hades", authBlank));
+    }
+
+    @Test
+    void addGameToWishlist_throwsWhenGameNameNullOrBlank() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        assertThrows(IllegalArgumentException.class, () -> userService.addGameToWishlist(null, auth));
+        assertThrows(IllegalArgumentException.class, () -> userService.addGameToWishlist("   ", auth));
+    }
+
+    @Test
+    void addGameToWishlist_throwsWhenGameNotFound() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        UserModel user = new UserModel("jane", "encoded");
+        when(userRepository.findByUserName("jane")).thenReturn(user);
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(java.util.Optional.empty());
+        assertThrows(IllegalArgumentException.class, () -> userService.addGameToWishlist("Hades", auth));
+    }
+
+    @Test
+    void addGameToWishlist_throwsWhenUserNotFound() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        when(userRepository.findByUserName("jane")).thenReturn(null);
+        com.example.backloggd.Models.GamesModel game = new com.example.backloggd.Models.GamesModel();
+        game.setGameName("Hades");
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(java.util.Optional.of(game));
+        assertThrows(org.springframework.security.core.userdetails.UsernameNotFoundException.class, () -> userService.addGameToWishlist("Hades", auth));
+    }
+
+    @Test
+    void addGameToWishlist_handlesNullWishlistByInitializing() {
+        Authentication auth = new TestingAuthenticationToken("jane", null);
+        UserModel user = new UserModel("jane", "encoded");
+        user.setWishlist(null);
+        com.example.backloggd.Models.GamesModel game = new com.example.backloggd.Models.GamesModel();
+        game.setGameName("Hades");
+        when(userRepository.findByUserName("jane")).thenReturn(user);
+        when(gameRepository.findBygameNameIgnoreCase("Hades")).thenReturn(java.util.Optional.of(game));
+        when(gameService.checkIfGameIsInDatabase("Hades")).thenReturn(ResponseEntity.ok("ok"));
+        ResponseEntity<String> resp = userService.addGameToWishlist("Hades", auth);
+        assertEquals(200, resp.getStatusCode().value());
+        assertEquals(1, user.getWishlist().size());
+    }
+
+    @Test
     void removeGameFromWishlistRemovesExistingGame() {
         Authentication authentication = new TestingAuthenticationToken("jane", null);
         UserModel user = new UserModel("jane", "encoded");
