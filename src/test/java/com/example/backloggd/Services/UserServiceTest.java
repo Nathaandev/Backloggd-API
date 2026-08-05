@@ -146,4 +146,24 @@ class UserServiceTest {
         assertThrows(IllegalArgumentException.class, () -> userService.signUp(new UserRegistrationDTO("bob", null)));
         assertThrows(IllegalArgumentException.class, () -> userService.signUp(new UserRegistrationDTO("bob", "   ")));
     }
+
+    // loadUserByUsername tests
+    @Test
+    void loadUserByUsername_successReturnsUserDetails() {
+        when(userRepository.findByUserName("jane")).thenReturn(new UserModel("jane", "encoded"));
+        var details = userService.loadUserByUsername("jane");
+        assertEquals("jane", details.getUsername());
+    }
+
+    @Test
+    void loadUserByUsername_throwsWhenUsernameNullOrBlank() {
+        assertThrows(org.springframework.security.core.userdetails.UsernameNotFoundException.class, () -> userService.loadUserByUsername(null));
+        assertThrows(org.springframework.security.core.userdetails.UsernameNotFoundException.class, () -> userService.loadUserByUsername("   "));
+    }
+
+    @Test
+    void loadUserByUsername_throwsWhenUserNotFound() {
+        when(userRepository.findByUserName("foo")).thenReturn(null);
+        assertThrows(org.springframework.security.core.userdetails.UsernameNotFoundException.class, () -> userService.loadUserByUsername("foo"));
+    }
 }
