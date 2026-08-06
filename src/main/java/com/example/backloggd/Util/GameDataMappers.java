@@ -95,7 +95,7 @@ public class GameDataMappers {
 
                     RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(game.rawgId());
                     if (gameWithFullDetails == null) {
-                        throw new RawgApiException("RAWG API did not return details for game id " + game.rawgId() + ".");
+                        throw new RawgApiException("IGDB API did not return details for game id " + game.rawgId() + ".");
                     }
                     String rawDescription = gameWithFullDetails.gameDescription();
                     String genre = GameDataMappers.GenresToString(game.genres());

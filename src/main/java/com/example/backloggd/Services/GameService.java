@@ -65,12 +65,12 @@ public class GameService {
         if (gamesModelOptional.isEmpty()) {
             RawgResponseDTO rawgResponse = rawgApiService.getGames(gameName);
             if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
-                logger.warn("{} was not found in RAWG API.", gameName);
+                logger.warn("{} was not found in IGDB API.", gameName);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game was not found.");
             }
             var bestMatch = rawgResponse.results().get(0);
             if (bestMatch.rawgId() == null) {
-                throw new RawgApiException("RAWG API returned a game without an identifier.");
+                throw new RawgApiException("IGDB API returned a game without an identifier.");
             }
             List<GenreDTO> genres = safeList(bestMatch.genres());
             List<PlatformsWrapperDTO> platforms = safeList(bestMatch.platforms());
@@ -78,7 +78,7 @@ public class GameService {
             BeanUtils.copyProperties(bestMatch, gameFound);
             RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(gameFound.getRawgId());
             if (gameWithFullDetails == null) {
-                throw new RawgApiException("RAWG API did not return full details for game id " + gameFound.getRawgId() + ".");
+                throw new RawgApiException("IGDB API did not return full details for game id " + gameFound.getRawgId() + ".");
             }
             List<DevelopersDTO> developers = safeList(gameWithFullDetails.developers());
             List<PublishersDTO> publishers = safeList(gameWithFullDetails.publishers());
