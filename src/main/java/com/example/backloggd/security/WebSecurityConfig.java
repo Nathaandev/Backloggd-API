@@ -21,7 +21,7 @@ public class WebSecurityConfig{
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(requests -> requests.requestMatchers("/signup").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(requests -> requests.requestMatchers("/signup", "/signup.html").permitAll().anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults());
 
 
