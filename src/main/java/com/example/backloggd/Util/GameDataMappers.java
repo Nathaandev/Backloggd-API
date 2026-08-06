@@ -81,6 +81,7 @@ public class GameDataMappers {
         gameFound.setGenres(GameDataMappers.GenresToString(genres));
         gameFound.setPlatforms(GameDataMappers.PlatformsToString(platforms));
         gameFound.setPublishers(GameDataMappers.PublishersToString(publishers));
+        gameFound.setCoverUrl(gameWithFullDetails.coverUrl());
         String rawDescription = gameWithFullDetails.gameDescription();
         gameFound.setGameDescription(GameDataMappers.cleanHtmlDescription(rawDescription));
     }

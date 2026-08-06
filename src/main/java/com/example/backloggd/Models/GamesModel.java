@@ -37,6 +37,8 @@ public class GamesModel {
 
     private Integer metacritic;
 
+    private String coverUrl;
+
     public GamesModel() {
     }
 
@@ -114,6 +116,14 @@ public class GamesModel {
 
     public void setMetacritic(Integer metacritic) {
         this.metacritic = metacritic;
+    }
+
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
     }
 
     public void setGameId(Long gameId) {

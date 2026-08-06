@@ -19,8 +19,11 @@
     }
     .shell { width: 100%; }
     header {
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
       z-index: 20;
       background: rgba(0,0,0,.82);
       backdrop-filter: blur(4px);
@@ -29,16 +32,16 @@
     .topbar {
       max-width: 1440px;
       margin: 0 auto;
-      padding: 24px 32px;
+      padding: 12px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 18px;
-      flex-wrap: wrap;
+      gap: 12px;
+      height: 100%;
     }
     .logo {
       font-family: "Press Start 2P", monospace;
-      font-size: 1.5rem;
+      font-size: 1.05rem;
       letter-spacing: .5px;
     }
     .logo span { color: var(--blue); }
@@ -50,7 +53,7 @@
       background: #111;
       border: 1px solid #333;
       padding: 0 12px;
-      min-width: min(100%, 360px);
+      min-width: min(100%, 300px);
     }
     .search:focus-within { border-color: var(--blue); }
     .search input {
@@ -88,24 +91,8 @@
       box-shadow: 2px 2px 0 rgba(255,255,255,.1);
     }
     .btn-signup:hover { background: #2b6bf0; }
-    main { max-width: 1440px; margin: 0 auto; padding: 36px 32px 48px; }
-    .hero { margin-bottom: 28px; }
-    .hero h1 {
-      font-family: "Press Start 2P", monospace;
-      font-size: clamp(1.2rem, 2vw, 2rem);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-    .hero h1 span { color: var(--blue); }
-    .hero p { color: var(--muted); max-width: 760px; line-height: 1.7; }
-    .row { margin-top: 34px; }
-    .row-title {
-      font-size: 1rem;
-      margin-bottom: 18px;
-      color: #ddd;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
+    main { max-width: 1440px; margin: 0 auto; padding: 96px 32px 48px; }
+    .row { margin-top: 0; }
     .games-container {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -161,18 +148,25 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
     .pager button {
-      background: #111;
+      width: 40px;
+      height: 40px;
+      background: #0f2a57;
       color: var(--text);
-      border: 1px solid #333;
-      padding: 10px 14px;
+      border: 1px solid #1e4d9c;
+      box-shadow: 2px 2px 0 rgba(67,133,255,.15);
       cursor: pointer;
+      font-weight: 700;
+    }
+    .pager button.active {
+      background: var(--blue);
+      color: #000;
     }
     .pager button:disabled { opacity: .35; cursor: not-allowed; }
-    .pager-info { color: var(--muted); min-width: 150px; text-align: center; }
+    .pager-info { display: none; }
     .status {
       margin-top: 18px;
       color: var(--muted);
@@ -196,18 +190,10 @@
     </header>
 
     <main>
-      <section class="hero">
-        <h1>OS JOGOS MAIS <span>BEM AVALIADOS</span></h1>
-        <p>Ranking inicial com os maiores Metacritic do banco atual, atualizado em lotes de 12 jogos por página.</p>
-      </section>
-
       <section class="row">
-        <h2 class="row-title">&gt; Maiores notas no Metacritic</h2>
         <div id="gamesContainer" class="games-container"></div>
         <div class="pager">
-          <button id="prevPage" type="button">Anterior</button>
-          <div id="pagerInfo" class="pager-info">Pagina 1</div>
-          <button id="nextPage" type="button">Próxima</button>
+          <div id="pagerButtons"></div>
         </div>
         <div id="status" class="status"></div>
       </section>
@@ -217,9 +203,7 @@
   <script>
     const container = document.getElementById("gamesContainer");
     const statusEl = document.getElementById("status");
-    const pagerInfo = document.getElementById("pagerInfo");
-    const prevPage = document.getElementById("prevPage");
-    const nextPage = document.getElementById("nextPage");
+    const pagerButtons = document.getElementById("pagerButtons");
     const searchInput = document.getElementById("searchInput");
     let currentPage = 0;
     let totalPages = 0;
@@ -253,6 +237,23 @@
       });
     }
 
+    function renderPager() {
+      pagerButtons.innerHTML = "";
+      for (let i = 0; i < totalPages; i++) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = String(i + 1);
+        if (i === currentPage) {
+          button.className = "active";
+        }
+        button.disabled = i === currentPage;
+        button.addEventListener("click", function () {
+          loadPage(i);
+        });
+        pagerButtons.appendChild(button);
+      }
+    }
+
     async function loadPage(page) {
       statusEl.textContent = "Carregando...";
       try {
@@ -264,25 +265,14 @@
         currentPage = data.number || 0;
         totalPages = data.totalPages || 0;
         render(data.content || []);
-        pagerInfo.textContent = "Pagina " + (currentPage + 1) + " de " + (totalPages || 1);
-        prevPage.disabled = currentPage <= 0;
-        nextPage.disabled = totalPages === 0 || currentPage >= totalPages - 1;
+        renderPager();
         statusEl.textContent = "";
       } catch (error) {
         statusEl.textContent = error.message;
         container.innerHTML = "";
-        prevPage.disabled = true;
-        nextPage.disabled = true;
+        pagerButtons.innerHTML = "";
       }
     }
-
-    prevPage.addEventListener("click", function () {
-      if (currentPage > 0) loadPage(currentPage - 1);
-    });
-
-    nextPage.addEventListener("click", function () {
-      if (totalPages === 0 || currentPage < totalPages - 1) loadPage(currentPage + 1);
-    });
 
     searchInput.addEventListener("keydown", function (event) {
       if (event.key === "Enter") {

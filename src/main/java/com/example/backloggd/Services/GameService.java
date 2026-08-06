@@ -20,6 +20,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -169,6 +171,11 @@ public class GameService {
 
     public Page<GameSummaryDTO> searchGamesByMetacritic(String ordering, Pageable pageable) {
         validateGameName(ordering);
+        Page<GameSummaryDTO> cachedPage = loadCachedMetacriticGames(ordering, pageable);
+        if (cachedPage.hasContent()) {
+            return cachedPage;
+        }
+
         RawgResponseDTO rawgResponse = rawgApiService.getGamesByMetacritic(ordering, pageable);
         if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
@@ -210,5 +217,34 @@ public class GameService {
 
     private <T> List<T> safeList(List<T> values) {
         return values == null ? List.of() : values;
+    }
+
+    private Page<GameSummaryDTO> loadCachedMetacriticGames(String ordering, Pageable pageable) {
+        Sort sort = Sort.by("metacritic");
+        if (ordering != null && ordering.trim().toLowerCase().startsWith("-")) {
+            sort = sort.descending();
+        } else {
+            sort = sort.ascending();
+        }
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<GameSummaryDTO> cached = gameRepository.findByMetacriticIsNotNull(sortedPageable).map(this::toSummaryDto);
+        return cached;
+    }
+
+    private GameSummaryDTO toSummaryDto(GamesModel game) {
+        return new GameSummaryDTO(
+                game.getRawgId(),
+                game.getGameName(),
+                game.getReleaseDate(),
+                game.getMetacritic(),
+                game.getGenres(),
+                game.getPlatforms(),
+                game.getGameDescription(),
+                game.getDevelopers(),
+                game.getPublishers(),
+                "",
+                0.0,
+                game.getCoverUrl()
+        );
     }
 }
