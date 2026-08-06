@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Backloggd - Sign Up</title>
+  <title>Backloggd - Log In</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap");
     :root { --blue: #3b82f6; --blue-dim: #1e3a66; --bg: #000; --panel: #0a0c10; --text: #f2f2f0; --muted: #7c8699; --border: #262b36; }
@@ -36,12 +36,7 @@
     @keyframes float { 0%,100% { transform: translateY(0) rotate(var(--r)); } 50% { transform: translateY(-10px) rotate(var(--r)); } }
     .shell { width: 100%; max-width: 420px; position: relative; }
     .brand { text-align: center; margin-bottom: 28px; }
-    .brand h1 {
-      font-family: "Press Start 2P", monospace;
-      font-size: 18px;
-      line-height: 1.6;
-      margin: 0;
-    }
+    .brand h1 { font-family: "Press Start 2P", monospace; font-size: 18px; line-height: 1.6; margin: 0; }
     .bars { display: flex; justify-content: center; gap: 4px; margin-top: 14px; }
     .bars span { width: 14px; height: 6px; background: #1a1d24; }
     .bars span.fill { background: var(--blue); }
@@ -127,7 +122,6 @@
       color: var(--muted);
     }
     .status.error { color: #ff7b7b; }
-    .status.ok { color: #7dffb2; }
   </style>
 </head>
 <body>
@@ -154,7 +148,7 @@
 
     <section class="card">
       <a class="toplink" href="/signup">/signup</a>
-      <form id="signupForm">
+      <form method="post" action="/login">
         <label for="username">&gt; username</label>
         <div class="field">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
@@ -164,65 +158,26 @@
         <label for="password">&gt; senha</label>
         <div class="field password">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11V8a5 5 0 1 1 10 0v3m-11 0h12v10H6V11Zm6 4v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <input id="password" name="password" type="password" autocomplete="new-password" placeholder="********" required />
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="********" required />
           <button type="button" class="eye" id="togglePassword" aria-label="Mostrar senha">👁</button>
         </div>
 
-        <button class="submit" id="submitBtn" type="submit">CONTINUAR</button>
+        <button class="submit" type="submit">ENTRAR</button>
         <div class="status" id="status"></div>
       </form>
     </section>
 
-    <p class="footer">já tem conta? <a href="/login">entrar</a></p>
+    <p class="footer">não tem conta? <a href="/signup">criar conta</a></p>
   </main>
 
   <script>
-    const form = document.getElementById("signupForm");
-    const username = document.getElementById("username");
     const password = document.getElementById("password");
-    const submitBtn = document.getElementById("submitBtn");
-    const statusEl = document.getElementById("status");
     const togglePassword = document.getElementById("togglePassword");
-
     togglePassword.addEventListener("click", function () {
       const visible = password.type === "text";
       password.type = visible ? "password" : "text";
       togglePassword.textContent = visible ? "👁" : "🙈";
       togglePassword.setAttribute("aria-label", visible ? "Mostrar senha" : "Ocultar senha");
-    });
-
-    form.addEventListener("submit", async function (event) {
-      event.preventDefault();
-      statusEl.className = "status";
-      statusEl.textContent = "";
-      submitBtn.disabled = true;
-      submitBtn.textContent = "CARREGANDO";
-
-      try {
-        const response = await fetch("/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userName: username.value.trim(),
-            password: password.value,
-          }),
-        });
-
-        const text = await response.text();
-        if (!response.ok) {
-          throw new Error(text || "Falha ao criar conta.");
-        }
-
-        statusEl.className = "status ok";
-        statusEl.textContent = "Conta criada com sucesso.";
-        form.reset();
-      } catch (error) {
-        statusEl.className = "status error";
-        statusEl.textContent = error.message;
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "CONTINUAR";
-      }
     });
   </script>
 </body>
