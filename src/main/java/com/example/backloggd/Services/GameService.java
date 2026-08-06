@@ -227,24 +227,47 @@ public class GameService {
             sort = sort.ascending();
         }
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        Page<GameSummaryDTO> cached = gameRepository.findByMetacriticIsNotNull(sortedPageable).map(this::toSummaryDto);
-        return cached;
+        return gameRepository.findByMetacriticIsNotNull(sortedPageable).map(this::toSummaryDto);
     }
 
     private GameSummaryDTO toSummaryDto(GamesModel game) {
+        GamesModel resolvedGame = ensureGameDetails(game);
         return new GameSummaryDTO(
-                game.getRawgId(),
-                game.getGameName(),
-                game.getReleaseDate(),
-                game.getMetacritic(),
-                game.getGenres(),
-                game.getPlatforms(),
-                game.getGameDescription(),
-                game.getDevelopers(),
-                game.getPublishers(),
+                resolvedGame.getRawgId(),
+                resolvedGame.getGameName(),
+                resolvedGame.getReleaseDate(),
+                resolvedGame.getMetacritic(),
+                resolvedGame.getGenres(),
+                resolvedGame.getPlatforms(),
+                resolvedGame.getGameDescription(),
+                resolvedGame.getDevelopers(),
+                resolvedGame.getPublishers(),
                 "",
                 0.0,
-                game.getCoverUrl()
+                resolvedGame.getCoverUrl()
         );
+    }
+
+    private GamesModel ensureGameDetails(GamesModel game) {
+        if (game.getCoverUrl() != null && !game.getCoverUrl().isBlank()) {
+            return game;
+        }
+        RawgResponseDTO rawgResponse = rawgApiService.getGames(game.getGameName());
+        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+            return game;
+        }
+
+        RawgGameDTO bestMatch = rawgResponse.results().get(0);
+        if (bestMatch == null) {
+            return game;
+        }
+
+        if (bestMatch.coverUrl() == null || bestMatch.coverUrl().isBlank()) {
+            return game;
+        }
+
+        BeanUtils.copyProperties(bestMatch, game, "gameDescription", "tags", "rating");
+        gameRepository.save(game);
+        return game;
     }
 }
