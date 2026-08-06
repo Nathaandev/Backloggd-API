@@ -6,6 +6,7 @@ import com.example.backloggd.Services.GameService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,31 +29,31 @@ public class GameController {
         return gameService.searchGame(gameName);
     }
     @GetMapping("/search/genre")
-    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByGenre(@Valid @RequestParam String genres, Pageable pageable){
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByGenre(@Valid @RequestParam String genres, @PageableDefault(size = 12) Pageable pageable){
         Page<GameSummaryDTO> gamesPage = gameService.searchGameByGenre(genres, pageable);
 
         return ResponseEntity.ok(gamesPage);
     }
     @GetMapping("/search/dev")
-    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByDeveloper(@Valid @RequestParam String developer, Pageable pageable){
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByDeveloper(@Valid @RequestParam String developer, @PageableDefault(size = 12) Pageable pageable){
         Page<GameSummaryDTO> gamesPage = gameService.searchGameByDeveloper(developer, pageable);
 
         return ResponseEntity.ok(gamesPage);
     }
     @GetMapping("/search/pub")
-    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByPublisher(@Valid @RequestParam String publisher, Pageable pageable){
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByPublisher(@Valid @RequestParam String publisher, @PageableDefault(size = 12) Pageable pageable){
         Page<GameSummaryDTO> gamesPage = gameService.searchGamesByPublishers(publisher, pageable);
         return ResponseEntity.ok(gamesPage);
     }
 
     @GetMapping("/search/metacritic")
-    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByMetacritic(@Valid @RequestParam String ordering, Pageable pageable){
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByMetacritic(@Valid @RequestParam String ordering, @PageableDefault(size = 12) Pageable pageable){
         Page<GameSummaryDTO> gamesPage = gameService.searchGamesByMetacritic(ordering, pageable);
         return ResponseEntity.ok(gamesPage);
     }
 
     @GetMapping("/search/tags")
-    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByTags(@Valid @RequestParam String tags, Pageable pageable){
+    public ResponseEntity<Page<GameSummaryDTO>> searchGamesByTags(@Valid @RequestParam String tags, @PageableDefault(size = 12) Pageable pageable){
         Page<GameSummaryDTO> gamesPage = gameService.searchGamesByTags(tags, pageable);
         return ResponseEntity.ok(gamesPage);
     }
