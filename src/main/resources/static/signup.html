@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backloggd - Sign Up</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap");
+    :root { --blue: #3b82f6; --blue-dim: #1e3a66; --bg: #000; --panel: #0a0c10; --text: #f2f2f0; --muted: #7c8699; --border: #262b36; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Space Mono", monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: 24px;
+    }
+    .grid, .icons { position: fixed; inset: 0; pointer-events: none; }
+    .grid {
+      background-image: linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
+    }
+    .icon {
+      position: absolute;
+      color: var(--blue);
+      opacity: 0.14;
+      animation: float var(--d) ease-in-out infinite;
+      transform: rotate(var(--r));
+    }
+    @keyframes float { 0%,100% { transform: translateY(0) rotate(var(--r)); } 50% { transform: translateY(-10px) rotate(var(--r)); } }
+    .shell { width: 100%; max-width: 420px; position: relative; }
+    .brand { text-align: center; margin-bottom: 28px; }
+    .brand h1 {
+      font-family: "Press Start 2P", monospace;
+      font-size: 18px;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .bars { display: flex; justify-content: center; gap: 4px; margin-top: 14px; }
+    .bars span { width: 14px; height: 6px; background: #1a1d24; }
+    .bars span.fill { background: var(--blue); }
+    .card {
+      background: rgba(0,0,0,0.9);
+      border: 2px solid var(--blue);
+      clip-path: polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px));
+      padding: 30px 26px 26px;
+      box-shadow: 0 0 0 1px rgba(59,130,246,0.2);
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .field { position: relative; margin-bottom: 18px; }
+    .field svg {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #4a5261;
+      width: 16px;
+      height: 16px;
+    }
+    input {
+      width: 100%;
+      border-radius: 0;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      padding: 12px 14px 12px 38px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+    input::placeholder { color: #3d4552; }
+    .password input { padding-right: 38px; }
+    .eye {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: 0;
+      color: #4a5261;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+    }
+    .eye:hover { color: var(--text); }
+    .submit {
+      width: 100%;
+      background: var(--blue);
+      color: #040508;
+      border: 0;
+      padding: 13px 16px;
+      font-family: "Press Start 2P", monospace;
+      font-size: 11px;
+      letter-spacing: .5px;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 var(--blue-dim);
+      transition: transform .1s ease, opacity .2s ease;
+    }
+    .submit:active { transform: translate(4px, 4px); box-shadow: none; }
+    .submit:disabled { opacity: .75; cursor: default; }
+    .footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 22px; }
+    .footer a, .toplink { color: var(--blue); text-decoration: none; font-weight: 700; }
+    .toplink { display: inline-block; margin-bottom: 14px; font-size: 12px; }
+    .status {
+      min-height: 20px;
+      margin-top: 14px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+    .status.error { color: #ff7b7b; }
+    .status.ok { color: #7dffb2; }
+  </style>
+</head>
+<body>
+  <div class="icons" aria-hidden="true">
+    <div class="icon" style="top:8%; left:6%; font-size:46px; --r:-18deg; --d:4s;">🎮</div>
+    <div class="icon" style="top:70%; left:10%; font-size:34px; --r:10deg; --d:5s;">👻</div>
+    <div class="icon" style="top:18%; left:85%; font-size:40px; --r:25deg; --d:6s;">⚔️</div>
+    <div class="icon" style="top:78%; left:88%; font-size:36px; --r:-12deg; --d:4s;">🏆</div>
+    <div class="icon" style="top:42%; left:3%; font-size:30px; --r:-8deg; --d:5s;">🕹️</div>
+    <div class="icon" style="top:88%; left:45%; font-size:30px; --r:15deg; --d:6s;">🎮</div>
+    <div class="icon" style="top:5%; left:48%; font-size:26px; --r:-6deg; --d:4s;">👻</div>
+    <div class="icon" style="top:55%; left:93%; font-size:26px; --r:-20deg; --d:5s;">⚔️</div>
+  </div>
+  <div class="grid" aria-hidden="true"></div>
+
+  <main class="shell">
+    <div class="brand">
+      <h1>MY<span style="color: var(--blue);">BACKLOG</span></h1>
+      <div class="bars" aria-hidden="true">
+        <span class="fill"></span><span class="fill"></span><span class="fill"></span><span class="fill"></span><span class="fill"></span>
+        <span class="fill"></span><span class="fill"></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <section class="card">
+      <a class="toplink" href="/signup">/signup</a>
+      <form id="signupForm">
+        <label for="username">&gt; username</label>
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <input id="username" name="username" type="text" autocomplete="username" placeholder="seu_usuario" required />
+        </div>
+
+        <label for="password">&gt; senha</label>
+        <div class="field password">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11V8a5 5 0 1 1 10 0v3m-11 0h12v10H6V11Zm6 4v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input id="password" name="password" type="password" autocomplete="new-password" placeholder="********" required />
+          <button type="button" class="eye" id="togglePassword" aria-label="Mostrar senha">👁</button>
+        </div>
+
+        <button class="submit" id="submitBtn" type="submit">CONTINUAR</button>
+        <div class="status" id="status"></div>
+      </form>
+    </section>
+
+    <p class="footer">novo por aqui? <a href="/signup">criar conta</a></p>
+  </main>
+
+  <script>
+    const form = document.getElementById("signupForm");
+    const username = document.getElementById("username");
+    const password = document.getElementById("password");
+    const submitBtn = document.getElementById("submitBtn");
+    const statusEl = document.getElementById("status");
+    const togglePassword = document.getElementById("togglePassword");
+
+    togglePassword.addEventListener("click", function () {
+      const visible = password.type === "text";
+      password.type = visible ? "password" : "text";
+      togglePassword.textContent = visible ? "👁" : "🙈";
+      togglePassword.setAttribute("aria-label", visible ? "Mostrar senha" : "Ocultar senha");
+    });
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      statusEl.className = "status";
+      statusEl.textContent = "";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "CARREGANDO";
+
+      try {
+        const response = await fetch("/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userName: username.value.trim(),
+            password: password.value,
+          }),
+        });
+
+        const text = await response.text();
+        if (!response.ok) {
+          throw new Error(text || "Falha ao criar conta.");
+        }
+
+        statusEl.className = "status ok";
+        statusEl.textContent = "Conta criada com sucesso.";
+        form.reset();
+      } catch (error) {
+        statusEl.className = "status error";
+        statusEl.textContent = error.message;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "CONTINUAR";
+      }
+    });
+  </script>
+</body>
+</html>
