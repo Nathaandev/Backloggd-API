@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MYBACKLOG</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap");
+    :root { --blue: #4385ff; --blue-dim: #1f3a72; --bg: #000; --panel: #0a0a0a; --border: #222; --text: #fff; --muted: #aaa; --meta-high: #66cc33; --meta-mid: #ffcc33; --meta-low: #ff3333; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      color: var(--text);
+      font-family: "Space Mono", monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .shell { width: 100%; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(0,0,0,.82);
+      backdrop-filter: blur(4px);
+      border-bottom: 1px solid rgba(67,133,255,.16);
+    }
+    .topbar {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .logo {
+      font-family: "Press Start 2P", monospace;
+      font-size: 1.5rem;
+      letter-spacing: .5px;
+    }
+    .logo span { color: var(--blue); }
+    .actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #111;
+      border: 1px solid #333;
+      padding: 0 12px;
+      min-width: min(100%, 360px);
+    }
+    .search:focus-within { border-color: var(--blue); }
+    .search input {
+      width: 100%;
+      background: transparent;
+      border: 0;
+      color: var(--text);
+      padding: 10px 0;
+      outline: none;
+      font: inherit;
+      font-size: 13px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      border: 0;
+      transition: transform .15s ease, opacity .15s ease, background-color .15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-login {
+      background: transparent;
+      color: var(--muted);
+      padding: 10px 12px;
+    }
+    .btn-login:hover { color: var(--text); }
+    .btn-signup {
+      background: var(--blue);
+      color: #000;
+      padding: 10px 18px;
+      box-shadow: 2px 2px 0 rgba(255,255,255,.1);
+    }
+    .btn-signup:hover { background: #2b6bf0; }
+    main { max-width: 1440px; margin: 0 auto; padding: 36px 32px 48px; }
+    .hero { margin-bottom: 28px; }
+    .hero h1 {
+      font-family: "Press Start 2P", monospace;
+      font-size: clamp(1.2rem, 2vw, 2rem);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .hero h1 span { color: var(--blue); }
+    .hero p { color: var(--muted); max-width: 760px; line-height: 1.7; }
+    .row { margin-top: 34px; }
+    .row-title {
+      font-size: 1rem;
+      margin-bottom: 18px;
+      color: #ddd;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .games-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 22px;
+    }
+    .game-card {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: transform .2s ease;
+    }
+    .game-card:hover { transform: translateY(-6px); }
+    .cover-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #111;
+      border: 1px solid var(--border);
+      box-shadow: 0 6px 15px rgba(0,0,0,.8);
+    }
+    .cover-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .game-card:hover .cover-wrapper img { opacity: .88; }
+    .metacritic {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #000;
+      padding: 4px 8px;
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 4px;
+      border: 2px solid;
+      box-shadow: 0 4px 6px rgba(0,0,0,.9);
+    }
+    .meta-high { color: var(--meta-high); border-color: var(--meta-high); }
+    .meta-mid { color: var(--meta-mid); border-color: var(--meta-mid); }
+    .meta-low { color: var(--meta-low); border-color: var(--meta-low); }
+    .game-title {
+      margin-top: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #ccc;
+    }
+    .pager {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .pager button {
+      background: #111;
+      color: var(--text);
+      border: 1px solid #333;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+    .pager button:disabled { opacity: .35; cursor: not-allowed; }
+    .pager-info { color: var(--muted); min-width: 150px; text-align: center; }
+    .status {
+      margin-top: 18px;
+      color: var(--muted);
+      min-height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="topbar">
+        <div class="logo">MY<span>BACKLOG</span></div>
+        <div class="actions">
+          <div class="search">
+            <input id="searchInput" type="text" placeholder="Buscar jogos..." />
+          </div>
+          <a class="btn btn-login" href="/login">Log In</a>
+          <a class="btn btn-signup" href="/signup">Sign Up</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>OS JOGOS MAIS <span>BEM AVALIADOS</span></h1>
+        <p>Ranking inicial com os maiores Metacritic do banco atual, atualizado em lotes de 12 jogos por página.</p>
+      </section>
+
+      <section class="row">
+        <h2 class="row-title">&gt; Maiores notas no Metacritic</h2>
+        <div id="gamesContainer" class="games-container"></div>
+        <div class="pager">
+          <button id="prevPage" type="button">Anterior</button>
+          <div id="pagerInfo" class="pager-info">Pagina 1</div>
+          <button id="nextPage" type="button">Próxima</button>
+        </div>
+        <div id="status" class="status"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const container = document.getElementById("gamesContainer");
+    const statusEl = document.getElementById("status");
+    const pagerInfo = document.getElementById("pagerInfo");
+    const prevPage = document.getElementById("prevPage");
+    const nextPage = document.getElementById("nextPage");
+    const searchInput = document.getElementById("searchInput");
+    let currentPage = 0;
+    let totalPages = 0;
+
+    function coverUrl(rawUrl) {
+      if (!rawUrl) return "https://placehold.co/300x400/111111/4385ff?text=No+Cover";
+      return rawUrl.startsWith("//") ? "https:" + rawUrl : rawUrl;
+    }
+
+    function metaClass(score) {
+      if (score == null) return "meta-low";
+      if (score >= 80) return "meta-high";
+      if (score >= 60) return "meta-mid";
+      return "meta-low";
+    }
+
+    function render(games) {
+      container.innerHTML = "";
+      games.forEach(function (game) {
+        const card = document.createElement("a");
+        card.className = "game-card";
+        card.href = "/games/search/" + encodeURIComponent(game.gameName);
+        card.innerHTML = [
+          '<div class="cover-wrapper">',
+          '<img src="' + coverUrl(game.coverUrl) + '" alt="' + game.gameName + '">',
+          '<div class="metacritic ' + metaClass(game.metacritic) + '">' + (game.metacritic == null ? "--" : game.metacritic) + '</div>',
+          '</div>',
+          '<div class="game-title">' + game.gameName + '</div>'
+        ].join("");
+        container.appendChild(card);
+      });
+    }
+
+    async function loadPage(page) {
+      statusEl.textContent = "Carregando...";
+      try {
+        const response = await fetch("/games/search/metacritic?ordering=-aggregated_rating&page=" + page + "&size=12", { credentials: "same-origin" });
+        if (!response.ok) {
+          throw new Error("Falha ao carregar os jogos.");
+        }
+        const data = await response.json();
+        currentPage = data.number || 0;
+        totalPages = data.totalPages || 0;
+        render(data.content || []);
+        pagerInfo.textContent = "Pagina " + (currentPage + 1) + " de " + (totalPages || 1);
+        prevPage.disabled = currentPage <= 0;
+        nextPage.disabled = totalPages === 0 || currentPage >= totalPages - 1;
+        statusEl.textContent = "";
+      } catch (error) {
+        statusEl.textContent = error.message;
+        container.innerHTML = "";
+        prevPage.disabled = true;
+        nextPage.disabled = true;
+      }
+    }
+
+    prevPage.addEventListener("click", function () {
+      if (currentPage > 0) loadPage(currentPage - 1);
+    });
+
+    nextPage.addEventListener("click", function () {
+      if (totalPages === 0 || currentPage < totalPages - 1) loadPage(currentPage + 1);
+    });
+
+    searchInput.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        window.location.href = "/games/search/" + encodeURIComponent(searchInput.value.trim());
+      }
+    });
+
+    loadPage(0);
+  </script>
+</body>
+</html>

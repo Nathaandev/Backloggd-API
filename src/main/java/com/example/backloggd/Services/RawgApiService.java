@@ -39,7 +39,7 @@ public class RawgApiService {
 
     private static final String DEFAULT_IGDB_BASE_URL = "https://api.igdb.com/v4";
     private static final String DEFAULT_IGDB_AUTH_URL = "https://id.twitch.tv/oauth2";
-    private static final String IGDB_FIELDS = "fields id,name,summary,first_release_date,aggregated_rating,genres.id,genres.name,platforms.id,platforms.name,involved_companies.company.id,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,keywords.id,keywords.name; ";
+    private static final String IGDB_FIELDS = "fields id,name,summary,first_release_date,aggregated_rating,cover.url,genres.id,genres.name,platforms.id,platforms.name,involved_companies.company.id,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,keywords.id,keywords.name; ";
 
     private final Logger logger = LoggerFactory.getLogger(RawgApiService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -181,6 +181,7 @@ public class RawgApiService {
         List<TagsDTO> tags = readTags(gameNode.path("keywords"));
         List<DevelopersDTO> developers = readCompanies(gameNode.path("involved_companies"), true);
         List<PublishersDTO> publishers = readPublishers(gameNode.path("involved_companies"));
+        String coverUrl = formatCoverUrl(gameNode.path("cover").path("url"));
 
         return new RawgGameDTO(
                 id,
@@ -192,7 +193,8 @@ public class RawgApiService {
                 developers,
                 genres,
                 platforms,
-                tags
+                tags,
+                coverUrl
         );
     }
 
@@ -485,6 +487,20 @@ public class RawgApiService {
         }
         long epochSeconds = node.asLong();
         return LocalDate.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC).toString();
+    }
+
+    private String formatCoverUrl(JsonNode node) {
+        if (node.isMissingNode() || node.isNull()) {
+            return null;
+        }
+        String value = node.asText();
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        if (value.startsWith("//")) {
+            value = "https:" + value;
+        }
+        return value.replace("t_thumb", "t_cover_big");
     }
 
     @FunctionalInterface

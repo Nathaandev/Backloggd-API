@@ -33,9 +33,12 @@ public record RawgGameDTO(
 
         List<PlatformsWrapperDTO> platforms,
 
-        List<TagsDTO> tags
+        List<TagsDTO> tags,
 
-         ){}
+        String coverUrl
 
-
-
+         ){
+    public RawgGameDTO(Integer rawgId, String gameName, String gameDescription, String releaseDate, List<PublishersDTO> publishers, Integer metacritic, List<DevelopersDTO> developers, List<GenreDTO> genres, List<PlatformsWrapperDTO> platforms, List<TagsDTO> tags) {
+        this(rawgId, gameName, gameDescription, releaseDate, publishers, metacritic, developers, genres, platforms, tags, null);
+    }
+}

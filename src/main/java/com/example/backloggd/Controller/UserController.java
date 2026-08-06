@@ -37,6 +37,11 @@ public class UserController {
         return "forward:/login.html";
     }
 
+    @GetMapping("/")
+    public String root() {
+        return "forward:/index.html";
+    }
+
     @ResponseBody
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication){

@@ -25,6 +25,11 @@ public record GameSummaryDTO(
 
         String tags,
 
-        double rating
+        double rating,
+
+        String coverUrl
 ) {
+    public GameSummaryDTO(Integer rawgId, String gameName, String releaseDate, Integer metacritic, String genres, String platforms, String gameDescription, String developers, String publishers, String tags, double rating) {
+        this(rawgId, gameName, releaseDate, metacritic, genres, platforms, gameDescription, developers, publishers, tags, rating, null);
+    }
 }

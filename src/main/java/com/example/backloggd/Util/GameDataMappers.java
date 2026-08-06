@@ -109,9 +109,13 @@ public class GameDataMappers {
                             .mapToDouble(ReviewModel::getRating)
                             .average()
                             .orElse(0.0);
+                    String coverUrl = gameWithFullDetails.coverUrl();
+                    if (coverUrl == null || coverUrl.isBlank()) {
+                        coverUrl = game.coverUrl();
+                    }
                     GameSummaryDTO gameFound = new GameSummaryDTO(game.rawgId(), game.gameName(), game.releaseDate(), game.metacritic(), genre, platforms,
                             GameDataMappers.cleanHtmlDescription(rawDescription), GameDataMappers.DevelopersToString(gameWithFullDetails.developers()),
-                            GameDataMappers.PublishersToString(gameWithFullDetails.publishers()), tags, rating);
+                            GameDataMappers.PublishersToString(gameWithFullDetails.publishers()), tags, rating, coverUrl);
                     return gameFound;
                 }).collect(Collectors.toList());
     }

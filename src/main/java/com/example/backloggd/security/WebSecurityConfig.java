@@ -19,7 +19,7 @@ public class WebSecurityConfig{
         httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
-                .authorizeHttpRequests(requests -> requests.requestMatchers("/login", "/login.html", "/signup", "/signup.html").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(requests -> requests.requestMatchers("/", "/index.html", "/login", "/login.html", "/signup", "/signup.html", "/favicon.ico").permitAll().anyRequest().authenticated())
                 .formLogin(form -> form.loginPage("/login").loginProcessingUrl("/login").permitAll())
                 .logout(Customizer.withDefaults());
 
