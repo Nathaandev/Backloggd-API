@@ -23,7 +23,7 @@ public class GameCacheWarmupService {
         logger.info("Starting cache warmup for popular games");
         
         try {
-            // Pre-load top 100 games by metacritic rating (descending)
+            // Preload top 100 games by metacritic rating (descending)
             int totalPages = 8; // 9 pages of 12 games each = 108 games
             int pageSize = 12;
             
