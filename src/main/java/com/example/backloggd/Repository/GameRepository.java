@@ -16,7 +16,7 @@ public interface GameRepository extends JpaRepository<GamesModel, Long> {
 
   Page<GamesModel> findByMetacriticIsNotNull(Pageable pageable);
 
-  Page<GamesModel> findByHypesIsNotNull(Pageable pageable);
+  Page<GamesModel> findByIgdbRatingIsNotNull(Pageable pageable);
 
   @Query("select count(g) from GamesModel g where g.metacritic is not null")
   long countByMetacriticIsNotNull();

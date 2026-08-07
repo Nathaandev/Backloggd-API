@@ -27,7 +27,8 @@ public record IgdbGameDTO(
 
         Integer metacritic,
 
-        Integer hypes,
+        @JsonProperty("rating")
+        Integer igdbRating,
 
         List<DevelopersDTO> developers,
 

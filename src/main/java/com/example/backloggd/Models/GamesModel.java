@@ -37,7 +37,7 @@ public class GamesModel {
 
     private Integer metacritic;
 
-    private Integer hypes;
+    private Integer igdbRating;
 
     private String coverUrl;
 
@@ -120,12 +120,12 @@ public class GamesModel {
         this.metacritic = metacritic;
     }
 
-    public Integer getHypes() {
-        return hypes;
+    public Integer getIgdbRating() {
+        return igdbRating;
     }
 
-    public void setHypes(Integer hypes) {
-        this.hypes = hypes;
+    public void setIgdbRating(Integer igdbRating) {
+        this.igdbRating = igdbRating;
     }
 
     public String getCoverUrl() {

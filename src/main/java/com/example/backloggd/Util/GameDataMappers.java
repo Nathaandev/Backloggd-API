@@ -114,7 +114,7 @@ public class GameDataMappers {
                     if (coverUrl == null || coverUrl.isBlank()) {
                         coverUrl = game.coverUrl();
                     }
-                    GameSummaryDTO gameFound = new GameSummaryDTO(game.igdbId(), game.gameName(), game.releaseDate(), game.metacritic(), game.hypes(), genre, platforms,
+                    GameSummaryDTO gameFound = new GameSummaryDTO(game.igdbId(), game.gameName(), game.releaseDate(), game.metacritic(), game.igdbRating(), genre, platforms,
                             GameDataMappers.cleanHtmlDescription(rawDescription), GameDataMappers.DevelopersToString(gameWithFullDetails.developers()),
                             GameDataMappers.PublishersToString(gameWithFullDetails.publishers()), tags, rating, coverUrl);
                     return gameFound;

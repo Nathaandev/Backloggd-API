@@ -40,7 +40,7 @@ public class IgdbApiService {
 
     private static final String DEFAULT_IGDB_BASE_URL = "https://api.igdb.com/v4";
     private static final String DEFAULT_IGDB_AUTH_URL = "https://id.twitch.tv/oauth2";
-    private static final String IGDB_FIELDS = "fields id,name,summary,first_release_date,aggregated_rating,hypes,cover.url,genres.id,genres.name,platforms.id,platforms.name,involved_companies.company.id,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,keywords.id,keywords.name; ";
+    private static final String IGDB_FIELDS = "fields id,name,summary,first_release_date,aggregated_rating,rating,cover.url,genres.id,genres.name,platforms.id,platforms.name,involved_companies.company.id,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,keywords.id,keywords.name; ";
 
     private final Logger logger = LoggerFactory.getLogger(IgdbApiService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -109,7 +109,7 @@ public class IgdbApiService {
     @Cacheable(value = "popularGames", key = "#ordering + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public IgdbResponseDTO getPopularGames(String ordering, Pageable pageable){
         validateQueryText(ordering, "Ordering");
-        return fetchWithFallback(ordering, pageable, "popular", this::buildPopularGamesQuery);
+        return fetchGames(buildPopularGamesQuery(ordering, pageable));
     }
 
     @Cacheable(value = "gamesByTags", key = "#tags + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
@@ -189,7 +189,7 @@ public class IgdbApiService {
 
         String releaseDate = formatReleaseDate(gameNode.path("first_release_date"));
         Integer metacritic = readDoubleAsInteger(gameNode.path("aggregated_rating"));
-        Integer hypes = readInteger(gameNode, "hypes");
+        Integer igdbRating = readInteger(gameNode, "rating");
 
         List<GenreDTO> genres = readGenres(gameNode.path("genres"));
         List<PlatformsWrapperDTO> platforms = readPlatforms(gameNode.path("platforms"));
@@ -205,7 +205,7 @@ public class IgdbApiService {
                 releaseDate,
                 publishers,
                 metacritic,
-                hypes,
+                igdbRating,
                 developers,
                 genres,
                 platforms,
@@ -392,7 +392,8 @@ public class IgdbApiService {
     private String buildPopularGamesQuery(String value, Pageable pageable) {
         String direction = normalizeOrdering(value);
         return IGDB_FIELDS
-                + "sort hypes " + direction + "; "
+                + "where rating != n; "
+                + "sort rating " + direction + "; "
                 + pagingClause(pageable)
                 + "count;";
     }

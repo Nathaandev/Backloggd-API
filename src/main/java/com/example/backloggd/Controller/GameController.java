@@ -52,6 +52,12 @@ public class GameController {
         return ResponseEntity.ok(gamesPage);
     }
 
+    @GetMapping("/popular")
+    public ResponseEntity<Page<GameSummaryDTO>> getPopularGames(@Valid @RequestParam String ordering, @PageableDefault(size = 12) Pageable pageable){
+        Page<GameSummaryDTO> gamesPage = gameService.getPopularGames(ordering, pageable);
+        return ResponseEntity.ok(gamesPage);
+    }
+
     @GetMapping("/search/tags")
     public ResponseEntity<Page<GameSummaryDTO>> searchGamesByTags(@Valid @RequestParam String tags, @PageableDefault(size = 12) Pageable pageable){
         Page<GameSummaryDTO> gamesPage = gameService.searchGamesByTags(tags, pageable);

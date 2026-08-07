@@ -1,6 +1,7 @@
 package com.example.backloggd.DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 //Used if i am making a requisition that receive many games
 public record GameSummaryDTO(
@@ -12,7 +13,8 @@ public record GameSummaryDTO(
 
         Integer metacritic,
 
-        Integer hypes,
+        @JsonProperty("rating")
+        Integer igdbRating,
 
         String genres,
 

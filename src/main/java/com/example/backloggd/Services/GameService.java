@@ -253,14 +253,14 @@ public class GameService {
     }
 
     private Page<GameSummaryDTO> loadCachedPopularGames(String ordering, Pageable pageable) {
-        Sort sort = Sort.by("hypes");
+        Sort sort = Sort.by("igdbRating");
         if (ordering != null && ordering.trim().toLowerCase().startsWith("-")) {
             sort = sort.descending();
         } else {
             sort = sort.ascending();
         }
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        return gameRepository.findByHypesIsNotNull(sortedPageable).map(this::toSummaryDto);
+        return gameRepository.findByIgdbRatingIsNotNull(sortedPageable).map(this::toSummaryDto);
     }
 
     private GameSummaryDTO toSummaryDto(GamesModel game) {
@@ -270,7 +270,7 @@ public class GameService {
                 resolvedGame.getGameName(),
                 resolvedGame.getReleaseDate(),
                 resolvedGame.getMetacritic(),
-                resolvedGame.getHypes(),
+                resolvedGame.getIgdbRating(),
                 resolvedGame.getGenres(),
                 resolvedGame.getPlatforms(),
                 resolvedGame.getGameDescription(),
@@ -300,7 +300,7 @@ public class GameService {
             return game;
         }
 
-        BeanUtils.copyProperties(bestMatch, game, "gameDescription", "tags", "rating");
+        BeanUtils.copyProperties(bestMatch, game, "gameDescription", "tags", "igdbRating");
         gameRepository.save(game);
         return game;
     }
