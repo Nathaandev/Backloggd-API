@@ -24,8 +24,8 @@ public class GameCacheWarmupService {
         
         try {
             // Pre-load top 100 games by metacritic rating (descending)
-            int totalPages = 9; // 10 pages of 10 games each = 100 games
-            int pageSize = 10;
+            int totalPages = 8; // 9 pages of 12 games each = 108 games
+            int pageSize = 12;
             
             for (int page = 0; page <= totalPages; page++) {
                 Pageable pageable = PageRequest.of(page, pageSize);
