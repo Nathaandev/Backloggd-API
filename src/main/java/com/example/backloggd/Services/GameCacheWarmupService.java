@@ -12,11 +12,9 @@ public class GameCacheWarmupService {
 
     private static final Logger logger = LoggerFactory.getLogger(GameCacheWarmupService.class);
     
-    private final RawgApiService rawgApiService;
     private final GameService gameService;
 
-    public GameCacheWarmupService(RawgApiService rawgApiService, GameService gameService) {
-        this.rawgApiService = rawgApiService;
+    public GameCacheWarmupService(GameService gameService) {
         this.gameService = gameService;
     }
 
