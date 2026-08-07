@@ -1,8 +1,8 @@
 package com.example.backloggd.Services;
 
 import com.example.backloggd.DTO.GameResponseDTO;
-import com.example.backloggd.DTO.RawgGameDTO;
-import com.example.backloggd.DTO.RawgResponseDTO;
+import com.example.backloggd.DTO.IgdbGameDTO;
+import com.example.backloggd.DTO.IgdbResponseDTO;
 import com.example.backloggd.DTO.GameSummaryDTO;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.ReviewModel;
@@ -34,7 +34,7 @@ class GameServiceTest {
     private GameRepository gameRepository;
 
     @Mock
-    private RawgApiService rawgApiService;
+    private IgdbApiService igdbApiService;
 
     @Mock
     private GameDataMappers mapper;
@@ -43,7 +43,7 @@ class GameServiceTest {
 
     @BeforeEach
     void setup() {
-        gameService = spy(new GameService(rawgApiService, reviewRepository, mapper));
+        gameService = spy(new GameService(igdbApiService, reviewRepository, mapper));
         gameService.gameRepository = gameRepository;
     }
 
@@ -104,7 +104,7 @@ class GameServiceTest {
     @Test
     void checkIfGameIsInDatabaseReturnsNotFoundWhenRawgReturnsNothing() {
         when(gameRepository.findBygameNameIgnoreCase("Unknown")).thenReturn(Optional.empty());
-        when(rawgApiService.getGames("Unknown")).thenReturn(new RawgResponseDTO(List.of(), 0));
+        when(igdbApiService.getGames("Unknown")).thenReturn(new IgdbResponseDTO(List.of(), 0));
 
         ResponseEntity<String> response = gameService.checkIfGameIsInDatabase("Unknown");
 
@@ -122,19 +122,19 @@ class GameServiceTest {
 
         assertEquals(200, resp.getStatusCodeValue());
         assertEquals("Game found in database.", resp.getBody());
-        verify(rawgApiService, never()).getGames(anyString());
+        verify(igdbApiService, never()).getGames(anyString());
     }
 
     @Test
     void checkIfGameIsInDatabase_addsGameWhenRawgReturnsMatch() {
         when(gameRepository.findBygameNameIgnoreCase("NewGame")).thenReturn(Optional.empty());
 
-        RawgGameDTO bestMatch = new RawgGameDTO(123, "NewGame", "desc", "2020-01-01", List.of(), 90, List.of(), List.of(), List.of(), List.of());
-        RawgResponseDTO response = new RawgResponseDTO(List.of(bestMatch), 1);
-        when(rawgApiService.getGames("NewGame")).thenReturn(response);
+        IgdbGameDTO bestMatch = new IgdbGameDTO(123, "NewGame", "desc", "2020-01-01", List.of(), 90, null, List.of(), List.of(), List.of(), List.of());
+        IgdbResponseDTO response = new IgdbResponseDTO(List.of(bestMatch), 1);
+        when(igdbApiService.getGames("NewGame")).thenReturn(response);
 
-        RawgGameDTO fullDetails = new RawgGameDTO(123, "NewGame", "<p>full</p>", "2020-01-01", List.of(), 90, List.of(), List.of(), List.of(), List.of());
-        when(rawgApiService.GetGameDetailsWithID(123)).thenReturn(fullDetails);
+        IgdbGameDTO fullDetails = new IgdbGameDTO(123, "NewGame", "<p>full</p>", "2020-01-01", List.of(), 90, null, List.of(), List.of(), List.of(), List.of());
+        when(igdbApiService.GetGameDetailsWithID(123)).thenReturn(fullDetails);
 
         var resp = gameService.checkIfGameIsInDatabase("NewGame");
 
@@ -146,28 +146,28 @@ class GameServiceTest {
     @Test
     void checkIfGameIsInDatabase_throwsWhenRawgReturnsMatchWithoutId() {
         when(gameRepository.findBygameNameIgnoreCase("NoId")).thenReturn(Optional.empty());
-        RawgGameDTO bestMatch = new RawgGameDTO(null, "NoId", "desc", "2020-01-01", List.of(), 50, List.of(), List.of(), List.of(), List.of());
-        RawgResponseDTO response = new RawgResponseDTO(List.of(bestMatch), 1);
-        when(rawgApiService.getGames("NoId")).thenReturn(response);
+        IgdbGameDTO bestMatch = new IgdbGameDTO(null, "NoId", "desc", "2020-01-01", List.of(), 50, null, List.of(), List.of(), List.of(), List.of());
+        IgdbResponseDTO response = new IgdbResponseDTO(List.of(bestMatch), 1);
+        when(igdbApiService.getGames("NoId")).thenReturn(response);
 
-        assertThrows(com.example.backloggd.Exceptions.RawgApiException.class, () -> gameService.checkIfGameIsInDatabase("NoId"));
+        assertThrows(com.example.backloggd.Exceptions.IgdbApiException.class, () -> gameService.checkIfGameIsInDatabase("NoId"));
     }
 
     @Test
     void checkIfGameIsInDatabase_throwsWhenGetGameDetailsReturnsNull() {
         when(gameRepository.findBygameNameIgnoreCase("MissingDetails")).thenReturn(Optional.empty());
-        RawgGameDTO bestMatch = new RawgGameDTO(555, "MissingDetails", "desc", "2020-01-01", List.of(), 50, List.of(), List.of(), List.of(), List.of());
-        RawgResponseDTO response = new RawgResponseDTO(List.of(bestMatch), 1);
-        when(rawgApiService.getGames("MissingDetails")).thenReturn(response);
-        when(rawgApiService.GetGameDetailsWithID(555)).thenReturn(null);
+        IgdbGameDTO bestMatch = new IgdbGameDTO(555, "MissingDetails", "desc", "2020-01-01", List.of(), 50, null, List.of(), List.of(), List.of(), List.of());
+        IgdbResponseDTO response = new IgdbResponseDTO(List.of(bestMatch), 1);
+        when(igdbApiService.getGames("MissingDetails")).thenReturn(response);
+        when(igdbApiService.GetGameDetailsWithID(555)).thenReturn(null);
 
-        assertThrows(com.example.backloggd.Exceptions.RawgApiException.class, () -> gameService.checkIfGameIsInDatabase("MissingDetails"));
+        assertThrows(com.example.backloggd.Exceptions.IgdbApiException.class, () -> gameService.checkIfGameIsInDatabase("MissingDetails"));
     }
 
     @Test
     void searchGame_throwsWhenGameNotFoundAfterLookup() {
         when(gameRepository.findBygameNameIgnoreCase("Ghost")).thenReturn(Optional.empty());
-        when(rawgApiService.getGames("Ghost")).thenReturn(new RawgResponseDTO(List.of(), 0));
+        when(igdbApiService.getGames("Ghost")).thenReturn(new IgdbResponseDTO(List.of(), 0));
 
         assertThrows(IllegalArgumentException.class, () -> gameService.searchGame("Ghost"));
     }
@@ -175,7 +175,7 @@ class GameServiceTest {
     @Test
     void searchGameByGenre_returnsEmptyPageWhenRawgReturnsNoResults() {
         PageRequest pageable = PageRequest.of(0, 10);
-        when(rawgApiService.getGamesByGenre("rpg", pageable)).thenReturn(new RawgResponseDTO(List.of(), 0));
+        when(igdbApiService.getGamesByGenre("rpg", pageable)).thenReturn(new IgdbResponseDTO(List.of(), 0));
 
         Page<?> page = gameService.searchGameByGenre("rpg", pageable);
 
@@ -186,13 +186,13 @@ class GameServiceTest {
     @Test
     void searchGameByGenre_invokesCheckIfGameIsInDatabaseForEachResult() {
         PageRequest pageable = PageRequest.of(0, 10);
-        RawgGameDTO g1 = new RawgGameDTO(1, "G1", "d", "2020-01-01", List.of(), 10, List.of(), List.of(), List.of(), List.of());
-        RawgGameDTO g2 = new RawgGameDTO(2, "G2", "d", "2020-01-01", List.of(), 20, List.of(), List.of(), List.of(), List.of());
-        RawgResponseDTO response = new RawgResponseDTO(List.of(g1, g2), 2);
-        when(rawgApiService.getGamesByGenre("action", pageable)).thenReturn(response);
+        IgdbGameDTO g1 = new IgdbGameDTO(1, "G1", "d", "2020-01-01", List.of(), 10, null, List.of(), List.of(), List.of(), List.of());
+        IgdbGameDTO g2 = new IgdbGameDTO(2, "G2", "d", "2020-01-01", List.of(), 20, null, List.of(), List.of(), List.of(), List.of());
+        IgdbResponseDTO response = new IgdbResponseDTO(List.of(g1, g2), 2);
+        when(igdbApiService.getGamesByGenre("action", pageable)).thenReturn(response);
         when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(new java.util.ArrayList<>(List.of(
-                new GameSummaryDTO(1, "G1", "2020-01-01", 10, "", "", "desc", "dev", "pub", "", 0.0),
-                new GameSummaryDTO(2, "G2", "2020-01-01", 20, "", "", "desc", "dev", "pub", "", 0.0)
+                new GameSummaryDTO(1, "G1", "2020-01-01", 10, null, "", "", "desc", "dev", "pub", "", 0.0),
+                new GameSummaryDTO(2, "G2", "2020-01-01", 20, null, "", "", "desc", "dev", "pub", "", 0.0)
         )));
 
         gameService.searchGameByGenre("action", pageable);
@@ -203,27 +203,27 @@ class GameServiceTest {
     @Test
     void searchGamesByPublishers_callsRawgWithPublisherParameter() {
         PageRequest pageable = PageRequest.of(0, 5);
-        when(rawgApiService.getGamesByPublishers("Ubisoft", pageable)).thenReturn(new RawgResponseDTO(List.of(), 0));
+        when(igdbApiService.getGamesByPublishers("Ubisoft", pageable)).thenReturn(new IgdbResponseDTO(List.of(), 0));
 
         gameService.searchGamesByPublishers("Ubisoft", pageable);
 
-        verify(rawgApiService).getGamesByPublishers("Ubisoft", pageable);
+        verify(igdbApiService).getGamesByPublishers("Ubisoft", pageable);
     }
 
     @Test
     void searchGamesByTags_callsRawgWithTagsParameter() {
         PageRequest pageable = PageRequest.of(0, 5);
-        when(rawgApiService.getGamesByTags("multiplayer", pageable)).thenReturn(new RawgResponseDTO(List.of(), 0));
+        when(igdbApiService.getGamesByTags("multiplayer", pageable)).thenReturn(new IgdbResponseDTO(List.of(), 0));
 
         gameService.searchGamesByTags("multiplayer", pageable);
 
-        verify(rawgApiService).getGamesByTags("multiplayer", pageable);
+        verify(igdbApiService).getGamesByTags("multiplayer", pageable);
     }
 
     @Test
     void searchGamesByMetacritic_returnsEmptyPageWhenRawgReturnsNoResults() {
         PageRequest pageable = PageRequest.of(0, 10);
-        when(rawgApiService.getGamesByMetacritic("desc", pageable)).thenReturn(new RawgResponseDTO(List.of(), 0));
+        when(igdbApiService.getGamesByMetacritic("desc", pageable)).thenReturn(new IgdbResponseDTO(List.of(), 0));
 
         var page = gameService.searchGamesByMetacritic("desc", pageable);
 
@@ -233,13 +233,13 @@ class GameServiceTest {
     @Test
     void searchGamesByMetacritic_filtersNullMetacriticAndChecksDatabase() {
         PageRequest pageable = PageRequest.of(0, 10);
-        RawgGameDTO good = new RawgGameDTO(10, "Good", "d", "2020-01-01", List.of(), 80, List.of(), List.of(), List.of(), List.of());
-        RawgGameDTO bad = new RawgGameDTO(11, "Bad", "d", "2020-01-01", List.of(), null, List.of(), List.of(), List.of(), List.of());
-        RawgResponseDTO response = new RawgResponseDTO(List.of(good, bad), 2);
-        when(rawgApiService.getGamesByMetacritic("asc", pageable)).thenReturn(response);
+        IgdbGameDTO good = new IgdbGameDTO(10, "Good", "d", "2020-01-01", List.of(), 80, null, List.of(), List.of(), List.of(), List.of());
+        IgdbGameDTO bad = new IgdbGameDTO(11, "Bad", "d", "2020-01-01", List.of(), null, null, List.of(), List.of(), List.of(), List.of());
+        IgdbResponseDTO response = new IgdbResponseDTO(List.of(good, bad), 2);
+        when(igdbApiService.getGamesByMetacritic("asc", pageable)).thenReturn(response);
         when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(new java.util.ArrayList<>(List.of(
-                new GameSummaryDTO(10, "Good", "2020-01-01", 80, "", "", "desc", "dev", "pub", "", 0.0),
-                new GameSummaryDTO(11, "Bad", "2020-01-01", null, "", "", "desc", "dev", "pub", "", 0.0)
+                new GameSummaryDTO(10, "Good", "2020-01-01", 80, null, "", "", "desc", "dev", "pub", "", 0.0),
+                new GameSummaryDTO(11, "Bad", "2020-01-01", null, null, "", "", "desc", "dev", "pub", "", 0.0)
         )));
 
         gameService.searchGamesByMetacritic("asc", pageable);
@@ -251,10 +251,10 @@ class GameServiceTest {
     @Test
     void searchGameByDeveloper_savesMissingGamesToRepository() {
         PageRequest pageable = PageRequest.of(0, 10);
-        RawgGameDTO r1 = new RawgGameDTO(21, "NewOne", "d", "2020-01-01", List.of(), 70, List.of(), List.of(), List.of(), List.of());
-        RawgResponseDTO response = new RawgResponseDTO(List.of(r1), 1);
-        when(rawgApiService.getGamesByDeveloper("DevName", pageable)).thenReturn(response);
-        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(List.of(new GameSummaryDTO(21, "NewOne", "2020", 70, "", "", "desc", "dev", "pub", "", 0.0)));
+        IgdbGameDTO r1 = new IgdbGameDTO(21, "NewOne", "d", "2020-01-01", List.of(), 70, null, List.of(), List.of(), List.of(), List.of());
+        IgdbResponseDTO response = new IgdbResponseDTO(List.of(r1), 1);
+        when(igdbApiService.getGamesByDeveloper("DevName", pageable)).thenReturn(response);
+        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(List.of(new GameSummaryDTO(21, "NewOne", "2020", 70, null, "", "", "desc", "dev", "pub", "", 0.0)));
         when(gameRepository.findBygameNameIgnoreCase("NewOne")).thenReturn(Optional.empty());
 
         gameService.searchGameByDeveloper("DevName", pageable);
@@ -265,10 +265,10 @@ class GameServiceTest {
     @Test
     void searchGameByDeveloper_doesNotSaveWhenGameAlreadyExists() {
         PageRequest pageable = PageRequest.of(0, 10);
-        RawgGameDTO r1 = new RawgGameDTO(22, "Exists", "d", "2020-01-01", List.of(), 70, List.of(), List.of(), List.of(), List.of());
-        RawgResponseDTO response = new RawgResponseDTO(List.of(r1), 1);
-        when(rawgApiService.getGamesByDeveloper("Dev2", pageable)).thenReturn(response);
-        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(List.of(new GameSummaryDTO(22, "Exists", "2020", 70, "", "", "desc", "dev", "pub", "", 0.0)));
+        IgdbGameDTO r1 = new IgdbGameDTO(22, "Exists", "d", "2020-01-01", List.of(), 70, null, List.of(), List.of(), List.of(), List.of());
+        IgdbResponseDTO response = new IgdbResponseDTO(List.of(r1), 1);
+        when(igdbApiService.getGamesByDeveloper("Dev2", pageable)).thenReturn(response);
+        when(mapper.ConvertRawgResponseToGamesModel(response)).thenReturn(List.of(new GameSummaryDTO(22, "Exists", "2020", 70, null, "", "", "desc", "dev", "pub", "", 0.0)));
         GamesModel existing = new GamesModel();
         existing.setGameName("Exists");
         when(gameRepository.findBygameNameIgnoreCase("Exists")).thenReturn(Optional.of(existing));
