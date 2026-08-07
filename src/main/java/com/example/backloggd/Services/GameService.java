@@ -193,7 +193,6 @@ public class GameService {
     }
 
     public Page<GameSummaryDTO> getPopularGames(String ordering, Pageable pageable) {
-        validateGameName(ordering);
         Page<GameSummaryDTO> cachedPage = loadCachedPopularGames(ordering, pageable);
         if (cachedPage.hasContent()) {
             return cachedPage;
