@@ -18,7 +18,7 @@ public class GameCacheWarmupService {
         this.gameService = gameService;
     }
 
-    @Scheduled(cron = "0 0 3 * * ?") // Runs daily at 3 AM
+    @Scheduled(cron = "0 9 15 * * ?") // Runs daily at 3 AM
     public void warmupPopularGamesCache() {
         logger.info("Starting cache warmup for popular games");
         
