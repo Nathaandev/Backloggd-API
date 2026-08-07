@@ -1,5 +1,6 @@
 package com.example.backloggd.Services;
 
+import com.example.backloggd.DTO.GameSummaryDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,35 +33,35 @@ class GameCacheWarmupServiceTest {
     @Test
     void warmupPopularGamesCache_callsGameServiceForAllPages() {
         Pageable pageable = PageRequest.of(0, 12);
-        Page<?> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-        
-        when(gameService.searchGamesByMetacritic(anyString(), any(Pageable.class))).thenReturn(emptyPage);
+        Page<GameSummaryDTO> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(gameService.getPopularGames(anyString(), any(Pageable.class))).thenReturn(emptyPage);
 
         warmupService.warmupPopularGamesCache();
 
         // Should call 9 times (pages 0-8)
-        verify(gameService, times(9)).searchGamesByMetacritic(eq("desc"), any(Pageable.class));
+        verify(gameService, times(9)).getPopularGames(eq("desc"), any(Pageable.class));
     }
 
     @Test
     void warmupPopularGamesCache_continuesOnError() {
         Pageable pageable = PageRequest.of(0, 12);
-        Page<?> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-        
-        when(gameService.searchGamesByMetacritic(anyString(), any(Pageable.class)))
+        Page<GameSummaryDTO> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(gameService.getPopularGames(anyString(), any(Pageable.class)))
             .thenThrow(new RuntimeException("API error"))
             .thenReturn(emptyPage);
 
         warmupService.warmupPopularGamesCache();
 
         // Should continue despite error on first page
-        verify(gameService, times(9)).searchGamesByMetacritic(eq("desc"), any(Pageable.class));
+        verify(gameService, times(9)).getPopularGames(eq("desc"), any(Pageable.class));
     }
 
     @Test
     void warmupPopularGenres_callsGameServiceForEachGenre() {
         Pageable pageable = PageRequest.of(0, 12);
-        Page<?> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        Page<GameSummaryDTO> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
         
         when(gameService.searchGameByGenre(anyString(), any(Pageable.class))).thenReturn(emptyPage);
 
@@ -78,7 +79,7 @@ class GameCacheWarmupServiceTest {
     @Test
     void warmupPopularGenres_continuesOnError() {
         Pageable pageable = PageRequest.of(0, 12);
-        Page<?> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+        Page<GameSummaryDTO> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
         
         when(gameService.searchGameByGenre(anyString(), any(Pageable.class)))
             .thenThrow(new RuntimeException("API error"))

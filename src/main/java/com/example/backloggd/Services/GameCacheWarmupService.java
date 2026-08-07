@@ -21,23 +21,23 @@ public class GameCacheWarmupService {
     @Scheduled(cron = "0 9 15 * * ?") // Runs daily at 3 AM
     public void warmupPopularGamesCache() {
         logger.info("Starting cache warmup for popular games");
-        
+
         try {
-            // Preload top 100 games by metacritic rating (descending)
+            // Preload top 100 games by hypes (descending)
             int totalPages = 8; // 9 pages of 12 games each = 108 games
             int pageSize = 12;
-            
+
             for (int page = 0; page <= totalPages; page++) {
                 Pageable pageable = PageRequest.of(page, pageSize);
                 logger.info("Warming up page {} of popular games", page + 1);
-                
+
                 try {
-                    gameService.searchGamesByMetacritic("desc", pageable);
+                    gameService.getPopularGames("desc", pageable);
                 } catch (Exception e) {
                     logger.error("Error warming up page {}: {}", page + 1, e.getMessage());
                 }
             }
-            
+
             logger.info("Cache warmup completed successfully");
         } catch (Exception e) {
             logger.error("Error during cache warmup: {}", e.getMessage(), e);

@@ -36,8 +36,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(404).body(e.getMessage());
     }
 
-    @ExceptionHandler(RawgApiException.class)
-    public ResponseEntity<String> handleRawgApiException(RawgApiException e) {
+    @ExceptionHandler(IgdbApiException.class)
+    public ResponseEntity<String> handleIgdbApiException(IgdbApiException e) {
         logger.error("IGDB API error: {}", e.getMessage());
         return ResponseEntity.status(502).body(e.getMessage());
     }

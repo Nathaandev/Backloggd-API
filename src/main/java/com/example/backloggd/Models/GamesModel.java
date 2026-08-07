@@ -24,7 +24,7 @@ public class GamesModel {
 
     private String releaseDate;
 
-    private Integer rawgId;
+    private Integer igdbId;
 
     @Lob
     private String genres;
@@ -36,6 +36,8 @@ public class GamesModel {
     private String platforms;
 
     private Integer metacritic;
+
+    private Integer hypes;
 
     private String coverUrl;
 
@@ -62,12 +64,12 @@ public class GamesModel {
         this.releaseDate = releaseDate;
     }
 
-    public Integer getRawgId() {
-        return rawgId;
+    public Integer getIgdbId() {
+        return igdbId;
     }
 
-    public void setRawgId(Integer rawgId) {
-        this.rawgId = rawgId;
+    public void setIgdbId(Integer igdbId) {
+        this.igdbId = igdbId;
     }
 
     public Long getGameId() {
@@ -116,6 +118,14 @@ public class GamesModel {
 
     public void setMetacritic(Integer metacritic) {
         this.metacritic = metacritic;
+    }
+
+    public Integer getHypes() {
+        return hypes;
+    }
+
+    public void setHypes(Integer hypes) {
+        this.hypes = hypes;
     }
 
     public String getCoverUrl() {

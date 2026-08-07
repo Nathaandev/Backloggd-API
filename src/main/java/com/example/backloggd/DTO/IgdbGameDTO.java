@@ -10,9 +10,9 @@ import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
 import com.example.backloggd.DTO.ObjectsDTO.TagsDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record RawgGameDTO(
+public record IgdbGameDTO(
         @JsonProperty("id")
-         Integer rawgId,
+         Integer igdbId,
 
         @JsonProperty("name")
          String gameName,
@@ -27,6 +27,8 @@ public record RawgGameDTO(
 
         Integer metacritic,
 
+        Integer hypes,
+
         List<DevelopersDTO> developers,
 
         List<GenreDTO> genres,
@@ -38,7 +40,7 @@ public record RawgGameDTO(
         String coverUrl
 
          ){
-    public RawgGameDTO(Integer rawgId, String gameName, String gameDescription, String releaseDate, List<PublishersDTO> publishers, Integer metacritic, List<DevelopersDTO> developers, List<GenreDTO> genres, List<PlatformsWrapperDTO> platforms, List<TagsDTO> tags) {
-        this(rawgId, gameName, gameDescription, releaseDate, publishers, metacritic, developers, genres, platforms, tags, null);
+    public IgdbGameDTO(Integer igdbId, String gameName, String gameDescription, String releaseDate, List<PublishersDTO> publishers, Integer metacritic, List<DevelopersDTO> developers, List<GenreDTO> genres, List<PlatformsWrapperDTO> platforms, List<TagsDTO> tags) {
+        this(igdbId, gameName, gameDescription, releaseDate, publishers, metacritic, null, developers, genres, platforms, tags, null);
     }
 }

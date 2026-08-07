@@ -7,9 +7,9 @@ import com.example.backloggd.DTO.ObjectsDTO.PlatformsDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsWrapperDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
 import com.example.backloggd.DTO.ObjectsDTO.TagsDTO;
-import com.example.backloggd.DTO.RawgGameDTO;
-import com.example.backloggd.DTO.RawgResponseDTO;
-import com.example.backloggd.Exceptions.RawgApiException;
+import com.example.backloggd.DTO.IgdbGameDTO;
+import com.example.backloggd.DTO.IgdbResponseDTO;
+import com.example.backloggd.Exceptions.IgdbApiException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -36,13 +36,13 @@ import java.util.Locale;
 import java.util.Set;
 
 @Service
-public class RawgApiService {
+public class IgdbApiService {
 
     private static final String DEFAULT_IGDB_BASE_URL = "https://api.igdb.com/v4";
     private static final String DEFAULT_IGDB_AUTH_URL = "https://id.twitch.tv/oauth2";
-    private static final String IGDB_FIELDS = "fields id,name,summary,first_release_date,aggregated_rating,cover.url,genres.id,genres.name,platforms.id,platforms.name,involved_companies.company.id,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,keywords.id,keywords.name; ";
+    private static final String IGDB_FIELDS = "fields id,name,summary,first_release_date,aggregated_rating,hypes,cover.url,genres.id,genres.name,platforms.id,platforms.name,involved_companies.company.id,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,keywords.id,keywords.name; ";
 
-    private final Logger logger = LoggerFactory.getLogger(RawgApiService.class);
+    private final Logger logger = LoggerFactory.getLogger(IgdbApiService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final WebClient igdbClient;
     private final WebClient authClient;
@@ -52,7 +52,7 @@ public class RawgApiService {
     private volatile String accessToken;
     private volatile Instant accessTokenExpiresAt = Instant.EPOCH;
 
-    public RawgApiService(
+    public IgdbApiService(
             @Value("${igdb.api.base-url:}") String baseUrl,
             @Value("${igdb.auth-url:}") String authUrl,
             @Value("${igdb.client-id:}") String clientId,
@@ -65,17 +65,17 @@ public class RawgApiService {
     }
 
     @Cacheable(value = "games", key = "#gameName")
-    public RawgResponseDTO getGames(String gameName){
+    public IgdbResponseDTO getGames(String gameName){
         validateQueryText(gameName, "Game name");
         return fetchGames(buildSearchQuery(gameName));
     }
 
-    @Cacheable(value = "gameDetails", key = "#rawgId")
-    public RawgGameDTO GetGameDetailsWithID(Integer rawgId){
-        if (rawgId == null) {
+    @Cacheable(value = "gameDetails", key = "#igdbId")
+    public IgdbGameDTO GetGameDetailsWithID(Integer igdbId){
+        if (igdbId == null) {
             throw new IllegalArgumentException("IGDB game id is required.");
         }
-        RawgResponseDTO response = fetchGames(buildIdQuery(rawgId));
+        IgdbResponseDTO response = fetchGames(buildIdQuery(igdbId));
         if (response == null || response.results() == null || response.results().isEmpty()) {
             return null;
         }
@@ -83,38 +83,44 @@ public class RawgApiService {
     }
 
     @Cacheable(value = "gamesByGenre", key = "#genres + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public RawgResponseDTO getGamesByGenre(String genres, Pageable pageable){
+    public IgdbResponseDTO getGamesByGenre(String genres, Pageable pageable){
         validateQueryText(genres, "Genre");
         return fetchWithFallback(genres, pageable, "genre", this::buildGenreQuery);
     }
 
     @Cacheable(value = "gamesByDeveloper", key = "#developer + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public RawgResponseDTO getGamesByDeveloper(String developer, Pageable pageable){
+    public IgdbResponseDTO getGamesByDeveloper(String developer, Pageable pageable){
         validateQueryText(developer, "Developer");
         return fetchWithFallback(developer, pageable, "developer", this::buildDeveloperQuery);
     }
 
     @Cacheable(value = "gamesByPublisher", key = "#publisher + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public RawgResponseDTO getGamesByPublishers(String publisher, Pageable pageable){
+    public IgdbResponseDTO getGamesByPublishers(String publisher, Pageable pageable){
         validateQueryText(publisher, "Publisher");
         return fetchWithFallback(publisher, pageable, "publisher", this::buildPublisherQuery);
     }
 
     @Cacheable(value = "gamesByMetacritic", key = "#ordering + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public RawgResponseDTO getGamesByMetacritic(String ordering, Pageable pageable){
+    public IgdbResponseDTO getGamesByMetacritic(String ordering, Pageable pageable){
         validateQueryText(ordering, "Ordering");
         return fetchWithFallback(ordering, pageable, "metacritic", this::buildMetacriticQuery);
     }
 
+    @Cacheable(value = "popularGames", key = "#ordering + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+    public IgdbResponseDTO getPopularGames(String ordering, Pageable pageable){
+        validateQueryText(ordering, "Ordering");
+        return fetchWithFallback(ordering, pageable, "popular", this::buildPopularGamesQuery);
+    }
+
     @Cacheable(value = "gamesByTags", key = "#tags + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
-    public RawgResponseDTO getGamesByTags(String tags, Pageable pageable){
+    public IgdbResponseDTO getGamesByTags(String tags, Pageable pageable){
         validateQueryText(tags, "Tags");
         return fetchWithFallback(tags, pageable, "tags", this::buildTagsQuery);
     }
 
-    private RawgResponseDTO fetchWithFallback(String value, Pageable pageable, String operationName, QueryBuilder queryBuilder) {
+    private IgdbResponseDTO fetchWithFallback(String value, Pageable pageable, String operationName, QueryBuilder queryBuilder) {
         String normalized = value.trim();
-        RawgResponseDTO response = null;
+        IgdbResponseDTO response = null;
         for (String searchTerm : buildSearchTerms(normalized)) {
             response = fetchGames(queryBuilder.build(searchTerm, pageable));
             if (response != null && response.results() != null && !response.results().isEmpty()) {
@@ -125,7 +131,7 @@ public class RawgApiService {
         return response;
     }
 
-    private RawgResponseDTO fetchGames(String query) {
+    private IgdbResponseDTO fetchGames(String query) {
         ResponseEntity<String> entity = igdbClient.post()
                 .uri("/games")
                 .header("Client-ID", clientId)
@@ -140,41 +146,41 @@ public class RawgApiService {
                                     String message = "IGDB request failed with status " + response.statusCode()
                                             + (body.isBlank() ? "" : ": " + body);
                                     logger.error(message);
-                                    return Mono.error(new RawgApiException(message));
+                                    return Mono.error(new IgdbApiException(message));
                                 }))
                 .toEntity(String.class)
                 .onErrorMap(WebClientRequestException.class,
-                        e -> new RawgApiException("IGDB request could not reach the API.", e))
+                        e -> new IgdbApiException("IGDB request could not reach the API.", e))
                 .block();
 
         if (entity == null || entity.getBody() == null || entity.getBody().isBlank()) {
-            return new RawgResponseDTO(List.of(), 0);
+            return new IgdbResponseDTO(List.of(), 0);
         }
 
         return parseResponse(entity.getBody(), entity.getHeaders());
     }
 
-    private RawgResponseDTO parseResponse(String body, HttpHeaders headers) {
+    private IgdbResponseDTO parseResponse(String body, HttpHeaders headers) {
         try {
             JsonNode root = objectMapper.readTree(body);
             if (!root.isArray()) {
-                return new RawgResponseDTO(List.of(), parseCount(headers, 0));
+                return new IgdbResponseDTO(List.of(), parseCount(headers, 0));
             }
 
-            List<RawgGameDTO> results = new ArrayList<>();
+            List<IgdbGameDTO> results = new ArrayList<>();
             for (JsonNode gameNode : root) {
-                RawgGameDTO game = toGameDTO(gameNode);
+                IgdbGameDTO game = toGameDTO(gameNode);
                 if (game != null) {
                     results.add(game);
                 }
             }
-            return new RawgResponseDTO(results, parseCount(headers, results.size()));
+            return new IgdbResponseDTO(results, parseCount(headers, results.size()));
         } catch (Exception e) {
-            throw new RawgApiException("Failed to parse IGDB response.", e);
+            throw new IgdbApiException("Failed to parse IGDB response.", e);
         }
     }
 
-    private RawgGameDTO toGameDTO(JsonNode gameNode) {
+    private IgdbGameDTO toGameDTO(JsonNode gameNode) {
         Integer id = readInteger(gameNode, "id");
         String name = readText(gameNode, "name");
         if (id == null || name == null || name.isBlank()) {
@@ -183,6 +189,7 @@ public class RawgApiService {
 
         String releaseDate = formatReleaseDate(gameNode.path("first_release_date"));
         Integer metacritic = readDoubleAsInteger(gameNode.path("aggregated_rating"));
+        Integer hypes = readInteger(gameNode, "hypes");
 
         List<GenreDTO> genres = readGenres(gameNode.path("genres"));
         List<PlatformsWrapperDTO> platforms = readPlatforms(gameNode.path("platforms"));
@@ -191,13 +198,14 @@ public class RawgApiService {
         List<PublishersDTO> publishers = readPublishers(gameNode.path("involved_companies"));
         String coverUrl = formatCoverUrl(gameNode.path("cover").path("url"));
 
-        return new RawgGameDTO(
+        return new IgdbGameDTO(
                 id,
                 name,
                 readText(gameNode, "summary"),
                 releaseDate,
                 publishers,
                 metacritic,
+                hypes,
                 developers,
                 genres,
                 platforms,
@@ -311,7 +319,7 @@ public class RawgApiService {
                 .block();
 
         if (body == null || body.isBlank()) {
-            throw new RawgApiException("IGDB auth returned an empty response.");
+            throw new IgdbApiException("IGDB auth returned an empty response.");
         }
 
         try {
@@ -319,13 +327,13 @@ public class RawgApiService {
             String token = readText(json, "access_token");
             int expiresIn = json.path("expires_in").asInt(0);
             if (token == null || token.isBlank()) {
-                throw new RawgApiException("IGDB auth did not return an access token.");
+                throw new IgdbApiException("IGDB auth did not return an access token.");
             }
             accessToken = token;
             accessTokenExpiresAt = Instant.now().plusSeconds(Math.max(60, expiresIn - 60L));
             return accessToken;
         } catch (Exception e) {
-            throw new RawgApiException("Failed to parse IGDB auth response.", e);
+            throw new IgdbApiException("Failed to parse IGDB auth response.", e);
         }
     }
 
@@ -348,8 +356,8 @@ public class RawgApiService {
         return IGDB_FIELDS + "search \"" + escapeQueryValue(value) + "\"; limit 20; offset 0; count;";
     }
 
-    private String buildIdQuery(Integer rawgId) {
-        return IGDB_FIELDS + "where id = " + rawgId + "; limit 1; offset 0; count;";
+    private String buildIdQuery(Integer igdbId) {
+        return IGDB_FIELDS + "where id = " + igdbId + "; limit 1; offset 0; count;";
     }
 
     private String buildGenreQuery(String value, Pageable pageable) {
@@ -377,6 +385,14 @@ public class RawgApiService {
         String direction = normalizeOrdering(value);
         return IGDB_FIELDS
                 + "sort aggregated_rating " + direction + "; "
+                + pagingClause(pageable)
+                + "count;";
+    }
+
+    private String buildPopularGamesQuery(String value, Pageable pageable) {
+        String direction = normalizeOrdering(value);
+        return IGDB_FIELDS
+                + "sort hypes " + direction + "; "
                 + pagingClause(pageable)
                 + "count;";
     }

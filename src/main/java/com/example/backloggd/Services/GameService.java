@@ -6,9 +6,9 @@ import com.example.backloggd.DTO.ObjectsDTO.DevelopersDTO;
 import com.example.backloggd.DTO.ObjectsDTO.GenreDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PlatformsWrapperDTO;
 import com.example.backloggd.DTO.ObjectsDTO.PublishersDTO;
-import com.example.backloggd.DTO.RawgGameDTO;
-import com.example.backloggd.DTO.RawgResponseDTO;
-import com.example.backloggd.Exceptions.RawgApiException;
+import com.example.backloggd.DTO.IgdbGameDTO;
+import com.example.backloggd.DTO.IgdbResponseDTO;
+import com.example.backloggd.Exceptions.IgdbApiException;
 import com.example.backloggd.Models.GamesModel;
 import com.example.backloggd.Models.ReviewModel;
 import com.example.backloggd.Repository.GameRepository;
@@ -38,13 +38,13 @@ public class GameService {
 
     @Autowired
     GameRepository gameRepository;
-    private final RawgApiService rawgApiService;
+    private final IgdbApiService igdbApiService;
     private final ReviewRepository reviewRepository;
 
     private final GameDataMappers mapper;
 
-    public GameService(RawgApiService rawgApiService, ReviewRepository reviewRepository, GameDataMappers mapper) {
-        this.rawgApiService = rawgApiService;
+    public GameService(IgdbApiService igdbApiService, ReviewRepository reviewRepository, GameDataMappers mapper) {
+        this.igdbApiService = igdbApiService;
         this.reviewRepository = reviewRepository;
         this.mapper = mapper;
     }
@@ -65,22 +65,22 @@ public class GameService {
         logger.info("Checking if {} is in database...", gameName);
         var gamesModelOptional = gameRepository.findBygameNameIgnoreCase(gameName);
         if (gamesModelOptional.isEmpty()) {
-            RawgResponseDTO rawgResponse = rawgApiService.getGames(gameName);
-            if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+            IgdbResponseDTO igdbResponse = igdbApiService.getGames(gameName);
+            if (igdbResponse == null || igdbResponse.results() == null || igdbResponse.results().isEmpty()) {
                 logger.warn("{} was not found in IGDB API.", gameName);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game was not found.");
             }
-            var bestMatch = rawgResponse.results().get(0);
-            if (bestMatch.rawgId() == null) {
-                throw new RawgApiException("IGDB API returned a game without an identifier.");
+            var bestMatch = igdbResponse.results().get(0);
+            if (bestMatch.igdbId() == null) {
+                throw new IgdbApiException("IGDB API returned a game without an identifier.");
             }
             List<GenreDTO> genres = safeList(bestMatch.genres());
             List<PlatformsWrapperDTO> platforms = safeList(bestMatch.platforms());
             com.example.backloggd.Models.GamesModel gameFound = new com.example.backloggd.Models.GamesModel();
             BeanUtils.copyProperties(bestMatch, gameFound);
-            RawgGameDTO gameWithFullDetails = rawgApiService.GetGameDetailsWithID(gameFound.getRawgId());
+            IgdbGameDTO gameWithFullDetails = igdbApiService.GetGameDetailsWithID(gameFound.getIgdbId());
             if (gameWithFullDetails == null) {
-                throw new RawgApiException("IGDB API did not return full details for game id " + gameFound.getRawgId() + ".");
+                throw new IgdbApiException("IGDB API did not return full details for game id " + gameFound.getIgdbId() + ".");
             }
             List<DevelopersDTO> developers = safeList(gameWithFullDetails.developers());
             List<PublishersDTO> publishers = safeList(gameWithFullDetails.publishers());
@@ -109,11 +109,11 @@ public class GameService {
 
     public Page<GameSummaryDTO> searchGameByGenre(String genres, Pageable pageable) {
         validateGameName(genres);
-        RawgResponseDTO rawgResponse = rawgApiService.getGamesByGenre(genres, pageable);
-        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+        IgdbResponseDTO igdbResponse = igdbApiService.getGamesByGenre(genres, pageable);
+        if (igdbResponse == null || igdbResponse.results() == null || igdbResponse.results().isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
-        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(igdbResponse);
         for (GameSummaryDTO games : gamesFound) {
             checkIfGameIsInDatabase(games.gameName());
         }
@@ -121,17 +121,17 @@ public class GameService {
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count() == null ? 0 : rawgResponse.count()
+                igdbResponse.count() == null ? 0 : igdbResponse.count()
         );
     }
 
     public Page<GameSummaryDTO> searchGameByDeveloper(String developer, Pageable pageable) {
         validateGameName(developer);
-        RawgResponseDTO rawgResponse = rawgApiService.getGamesByDeveloper(developer, pageable);
-        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+        IgdbResponseDTO igdbResponse = igdbApiService.getGamesByDeveloper(developer, pageable);
+        if (igdbResponse == null || igdbResponse.results() == null || igdbResponse.results().isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
-        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(igdbResponse);
 
         for (GameSummaryDTO gameSummaryDTO : gamesFound) {
             Optional<GamesModel> gameOptional = gameRepository.findBygameNameIgnoreCase(gameSummaryDTO.gameName());
@@ -144,17 +144,17 @@ public class GameService {
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count() == null ? 0 : rawgResponse.count()
+                igdbResponse.count() == null ? 0 : igdbResponse.count()
         );
     }
 
     public Page<GameSummaryDTO> searchGamesByPublishers(String publisher, Pageable pageable) {
         validateGameName(publisher);
-        RawgResponseDTO rawgResponse = rawgApiService.getGamesByPublishers(publisher, pageable);
-        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+        IgdbResponseDTO igdbResponse = igdbApiService.getGamesByPublishers(publisher, pageable);
+        if (igdbResponse == null || igdbResponse.results() == null || igdbResponse.results().isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
-        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(igdbResponse);
 
         for (GameSummaryDTO games : gamesFound) {
             checkIfGameIsInDatabase(games.gameName());
@@ -163,7 +163,7 @@ public class GameService {
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count() == null ? 0 : rawgResponse.count()
+                igdbResponse.count() == null ? 0 : igdbResponse.count()
         );
 
 
@@ -176,11 +176,11 @@ public class GameService {
             return cachedPage;
         }
 
-        RawgResponseDTO rawgResponse = rawgApiService.getGamesByMetacritic(ordering, pageable);
-        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+        IgdbResponseDTO igdbResponse = igdbApiService.getGamesByMetacritic(ordering, pageable);
+        if (igdbResponse == null || igdbResponse.results() == null || igdbResponse.results().isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
-        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(igdbResponse);
         gamesFound.removeIf(game -> game.metacritic() == null);
         for (GameSummaryDTO games : gamesFound) {
             checkIfGameIsInDatabase(games.gameName());
@@ -188,24 +188,46 @@ public class GameService {
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count() == null ? 0 : rawgResponse.count()
+                igdbResponse.count() == null ? 0 : igdbResponse.count()
         );
     }
 
-    public Page<GameSummaryDTO> searchGamesByTags(String tags, Pageable pageable) {
-        validateGameName(tags);
-        RawgResponseDTO rawgResponse = rawgApiService.getGamesByTags(tags, pageable);
-        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+    public Page<GameSummaryDTO> getPopularGames(String ordering, Pageable pageable) {
+        validateGameName(ordering);
+        Page<GameSummaryDTO> cachedPage = loadCachedPopularGames(ordering, pageable);
+        if (cachedPage.hasContent()) {
+            return cachedPage;
+        }
+
+        IgdbResponseDTO igdbResponse = igdbApiService.getPopularGames(ordering, pageable);
+        if (igdbResponse == null || igdbResponse.results() == null || igdbResponse.results().isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
         }
-        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(rawgResponse);
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(igdbResponse);
         for (GameSummaryDTO games : gamesFound) {
             checkIfGameIsInDatabase(games.gameName());
         }
         return new PageImpl<>(
                 gamesFound,
                 pageable,
-                rawgResponse.count() == null ? 0 : rawgResponse.count()
+                igdbResponse.count() == null ? 0 : igdbResponse.count()
+        );
+    }
+
+    public Page<GameSummaryDTO> searchGamesByTags(String tags, Pageable pageable) {
+        validateGameName(tags);
+        IgdbResponseDTO igdbResponse = igdbApiService.getGamesByTags(tags, pageable);
+        if (igdbResponse == null || igdbResponse.results() == null || igdbResponse.results().isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+        List<GameSummaryDTO> gamesFound = mapper.ConvertRawgResponseToGamesModel(igdbResponse);
+        for (GameSummaryDTO games : gamesFound) {
+            checkIfGameIsInDatabase(games.gameName());
+        }
+        return new PageImpl<>(
+                gamesFound,
+                pageable,
+                igdbResponse.count() == null ? 0 : igdbResponse.count()
         );
     }
 
@@ -230,13 +252,25 @@ public class GameService {
         return gameRepository.findByMetacriticIsNotNull(sortedPageable).map(this::toSummaryDto);
     }
 
+    private Page<GameSummaryDTO> loadCachedPopularGames(String ordering, Pageable pageable) {
+        Sort sort = Sort.by("hypes");
+        if (ordering != null && ordering.trim().toLowerCase().startsWith("-")) {
+            sort = sort.descending();
+        } else {
+            sort = sort.ascending();
+        }
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        return gameRepository.findByHypesIsNotNull(sortedPageable).map(this::toSummaryDto);
+    }
+
     private GameSummaryDTO toSummaryDto(GamesModel game) {
         GamesModel resolvedGame = ensureGameDetails(game);
         return new GameSummaryDTO(
-                resolvedGame.getRawgId(),
+                resolvedGame.getIgdbId(),
                 resolvedGame.getGameName(),
                 resolvedGame.getReleaseDate(),
                 resolvedGame.getMetacritic(),
+                resolvedGame.getHypes(),
                 resolvedGame.getGenres(),
                 resolvedGame.getPlatforms(),
                 resolvedGame.getGameDescription(),
@@ -252,12 +286,12 @@ public class GameService {
         if (game.getCoverUrl() != null && !game.getCoverUrl().isBlank()) {
             return game;
         }
-        RawgResponseDTO rawgResponse = rawgApiService.getGames(game.getGameName());
-        if (rawgResponse == null || rawgResponse.results() == null || rawgResponse.results().isEmpty()) {
+        IgdbResponseDTO igdbResponse = igdbApiService.getGames(game.getGameName());
+        if (igdbResponse == null || igdbResponse.results() == null || igdbResponse.results().isEmpty()) {
             return game;
         }
 
-        RawgGameDTO bestMatch = rawgResponse.results().get(0);
+        IgdbGameDTO bestMatch = igdbResponse.results().get(0);
         if (bestMatch == null) {
             return game;
         }

@@ -3,9 +3,9 @@ package com.example.backloggd.DTO;
 import java.util.List;
 
 //Dto that will get a list of all the games got.
-public record RawgResponseDTO(
+public record IgdbResponseDTO(
 
-        List<RawgGameDTO>results,
+        List<IgdbGameDTO>results,
 
         Integer count
 

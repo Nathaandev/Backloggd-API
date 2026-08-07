@@ -267,7 +267,7 @@
     async function loadPage(page) {
       statusEl.textContent = "Carregando...";
       try {
-        const response = await fetch("/games/search/metacritic?ordering=-aggregated_rating&page=" + page + "&size=12", { credentials: "same-origin" });
+        const response = await fetch("/games/search/popular?page=" + page + "&size=12", { credentials: "same-origin" });
         if (!response.ok) {
           throw new Error("Falha ao carregar os jogos.");
         }
@@ -294,3 +294,4 @@
   </script>
 </body>
 </html>
+

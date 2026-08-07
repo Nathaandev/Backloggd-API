@@ -4,13 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 //Used if i am making a requisition that receive many games
 public record GameSummaryDTO(
-        Integer rawgId,
+        Integer igdbId,
 
         String gameName,
 
         String releaseDate,
 
         Integer metacritic,
+
+        Integer hypes,
 
         String genres,
 
@@ -29,7 +31,7 @@ public record GameSummaryDTO(
 
         String coverUrl
 ) {
-    public GameSummaryDTO(Integer rawgId, String gameName, String releaseDate, Integer metacritic, String genres, String platforms, String gameDescription, String developers, String publishers, String tags, double rating) {
-        this(rawgId, gameName, releaseDate, metacritic, genres, platforms, gameDescription, developers, publishers, tags, rating, null);
+    public GameSummaryDTO(Integer igdbId, String gameName, String releaseDate, Integer metacritic, String genres, String platforms, String gameDescription, String developers, String publishers, String tags, double rating) {
+        this(igdbId, gameName, releaseDate, metacritic, null, genres, platforms, gameDescription, developers, publishers, tags, rating, null);
     }
 }
