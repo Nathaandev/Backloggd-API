@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
@@ -63,11 +64,13 @@ public class RawgApiService {
         this.clientSecret = normalizeCredential(clientSecret);
     }
 
+    @Cacheable(value = "games", key = "#gameName")
     public RawgResponseDTO getGames(String gameName){
         validateQueryText(gameName, "Game name");
         return fetchGames(buildSearchQuery(gameName));
     }
 
+    @Cacheable(value = "gameDetails", key = "#rawgId")
     public RawgGameDTO GetGameDetailsWithID(Integer rawgId){
         if (rawgId == null) {
             throw new IllegalArgumentException("IGDB game id is required.");
@@ -79,26 +82,31 @@ public class RawgApiService {
         return response.results().get(0);
     }
 
+    @Cacheable(value = "gamesByGenre", key = "#genres + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public RawgResponseDTO getGamesByGenre(String genres, Pageable pageable){
         validateQueryText(genres, "Genre");
         return fetchWithFallback(genres, pageable, "genre", this::buildGenreQuery);
     }
 
+    @Cacheable(value = "gamesByDeveloper", key = "#developer + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public RawgResponseDTO getGamesByDeveloper(String developer, Pageable pageable){
         validateQueryText(developer, "Developer");
         return fetchWithFallback(developer, pageable, "developer", this::buildDeveloperQuery);
     }
 
+    @Cacheable(value = "gamesByPublisher", key = "#publisher + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public RawgResponseDTO getGamesByPublishers(String publisher, Pageable pageable){
         validateQueryText(publisher, "Publisher");
         return fetchWithFallback(publisher, pageable, "publisher", this::buildPublisherQuery);
     }
 
+    @Cacheable(value = "gamesByMetacritic", key = "#ordering + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public RawgResponseDTO getGamesByMetacritic(String ordering, Pageable pageable){
         validateQueryText(ordering, "Ordering");
         return fetchWithFallback(ordering, pageable, "metacritic", this::buildMetacriticQuery);
     }
 
+    @Cacheable(value = "gamesByTags", key = "#tags + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public RawgResponseDTO getGamesByTags(String tags, Pageable pageable){
         validateQueryText(tags, "Tags");
         return fetchWithFallback(tags, pageable, "tags", this::buildTagsQuery);
